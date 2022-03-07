@@ -10,7 +10,7 @@ setup(name='Reporter',
         'jinja2',
         'pyyaml',
         'deepmerge',
-        'textile_parser @ git+ssh://git@gitlab.local.northwave.nl/janjaap.korpershoek/textile_parser.git',
+        'textile_parser @ git+ssh://git@github.com/JJK96/textile_parser.git',
       ],
       entry_points={
         'console_scripts': ['reporter=reporter:main'],
