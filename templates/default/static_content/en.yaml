@@ -3,7 +3,8 @@ text:
     classification: Classification
     finding: Finding
     risk: Risk
-    recommendation: Recommendation
+    description: Description
+    solution: Solution
     location: Location
     cvss_vector: CVSS-vector
 title_page:

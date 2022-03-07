@@ -144,7 +144,7 @@
 
 %Issue variables
 \newcommand{\cvss}[1]{\newcommand\@cvss{#1}}
-\newcommand{\description}[1]{\newcommand\@description{#1}}
+\newcommand{\descriptionfield}[1]{\newcommand\@description{#1}}
 \newcommand{\solution}[1]{\newcommand\@solution{#1}}
 \newcommand{\location}[1]{\newcommand\@location{#1}}
 \newcommand{\cvssvector}[1]{\newcommand\@cvssvector{#1}}

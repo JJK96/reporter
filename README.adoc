@@ -102,7 +102,7 @@ For Textile parsing of Dradis content https://gitlab.local.northwave.nl/janjaap.
 
 === The LaTeX template
 
-The latex template is stored in the `jinja_template/report/` folder. The heart of the template is the `report.cls` latex class file. This file contains all kinds of commands and macro's to simplify the syntax for creating a latex support. It sets the margins, the background images, the font settings, section headers, listing styles, etc. according to the house style of Northwave. It defines the colors for different risk levels of risks. It also defines the title page format and uses variables to fill the variable content.
+The latex template is stored in the `jinja_template/report/` folder. The heart of the template is the `report.cls` latex class file. This file contains all kinds of commands and macro's to simplify the syntax for creating a latex support. It defines the colors for different risk levels of risks. It also defines the title page format and uses variables to fill the variable content.
 
 ==== Notable commands/macro's
 
@@ -130,7 +130,7 @@ For creating an issue, the `issue` environment is available. This environment is
 
 ----
 \begin{issue}
-\description{Thes issue is ... }
+\descriptionfield{Thes issue is ... }
 \solution{You should ... }
 \location{Hostname.domain}
 \cvss{0.0}

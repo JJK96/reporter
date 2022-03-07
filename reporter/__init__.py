@@ -12,14 +12,16 @@ def init(output_dir='.', type="web_pentest", title="Title of the project", compa
     """Initiate a new report"""
     shutil.copytree(REPORT_INIT_DIR, output_dir)
     # Move git directory to .git
-    os.rename(os.path.join(output_dir, 'git'), os.path.join(output_dir, '.git'))
+    git_path = Path(os.path.join(output_dir, 'git'))
+    if git_path.exists():
+        os.rename(git_path, os.path.join(output_dir, '.git'))
     content = {
         "report_type": type,
         "title": title,
         "company": company,
         "testtime": testtime,
     }
-    template(content, output_dir, REPORT_INIT_DIR, extensions=[".tex", ".dradis", ".issue"])
+    template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue"])
     print(f"Created a new report in {output_dir}")
 
 
@@ -151,7 +153,7 @@ def main():
 
     init_parser = subparsers.add_parser("init", help="Inititate a new report")
     init_parser.add_argument("output_dir", help="Directory to create the new report in")
-    init_parser.add_argument("-t", "--type", choices=["pentest", "web_pentest"], default="web_pentest", help="Type of the report")
+    init_parser.add_argument("-t", "--type", choices=["pentest"], default="pentest", help="Type of the report")
     init_parser.add_argument("--title", help="Title of the project", default="Title of the project")
     init_parser.add_argument("-c", "--company", help="Company name", default="Company B.V.")
     init_parser.add_argument("--testtime", help="Time for the test in hours", default=40, type=int)
