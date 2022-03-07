@@ -1,0 +1,27 @@
+{
+    "latex-workshop.latex.external.build.command": "reporter",
+    "latex-workshop.latex.external.build.args": [
+        "generate"
+    ],
+    "code-review.categories": [
+        "Style guide",
+        "Resolved"
+    ],
+    "code-review.filename": "review",
+    "files.associations": {
+        "*.issue": "textile",
+        "*.dradis": "textile"
+    },
+    "ltex.language": "en-GB",
+    "ltex.enabled": [
+        "latex",
+        "textile"
+    ],
+    "code-review.priorities": [
+        "Open",
+        "Resolved",
+        "none",
+        "low"
+    ],
+    "code-review.groupBy": "category"
+}

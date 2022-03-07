@@ -1,0 +1,10 @@
+*.aux
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+.DS_Store
+*.toc
+__pycache__
+*.egg-info

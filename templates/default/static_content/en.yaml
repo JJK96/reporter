@@ -1,0 +1,40 @@
+text:
+    cvss_score: CVSS Score
+    classification: Classification
+    finding: Finding
+    risk: Risk
+    recommendation: Recommendation
+    location: Location
+    cvss_vector: CVSS-vector
+title_page:
+    date: Date
+    version: Version
+table_of_contents: Table of contents
+risks:
+    critical: Critical
+    high: High
+    medium: Medium
+    low: Low
+    none: Information/None
+risk_sections:
+    critical: Critical risk
+    high: High risk
+    medium: Medium risk
+    low: Low risk
+    none: Informational
+management_summary:
+    title: Management summary
+    assignment: Assignment
+    results:
+        title: Results
+    conclusion: Conclusion
+introduction:
+    title: Introduction and scope
+    assignment: Assignment
+results:
+    title: Results
+    text: |
+        The table below gives an overview of all findings that were identified during this phase of the test.
+        Each of these findings is provided with additional detail in the following paragraphs, sorted by their classification.
+conclusion:
+    title: Conclusion

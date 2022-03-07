@@ -1,0 +1,19 @@
+#[Title]#
+The title of the issue
+
+#[CVSSv3.BaseScore]#
+0.0
+
+#[CVSSv3Vector]#
+CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+
+#[Type]#
+Internal | External
+
+#[Description]#
+Explanation of the issue, context, risk, impact and recommendation.
+
+#[Solution]#
+What should be done to mitigate?
+
+#[References]#

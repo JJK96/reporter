@@ -1,0 +1,234 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesClass{report}[2021/06/12 report]
+\LoadClass[11pt]{article}
+
+%Table styles
+\RequirePackage[table]{xcolor}
+\RequirePackage{tabularx}
+\RequirePackage{tablestyles}
+
+% Graphbox for vertically centering image in table, provides align option to \includegraphics
+\RequirePackage{graphbox} %loads graphicx package
+
+\RequirePackage{tikz}
+
+%For tpage toggle
+\RequirePackage{etoolbox}
+
+% Set font
+\RequirePackage{fontspec}
+\setmainfont{Calibri}
+
+%If statements
+\RequirePackage{ifthen}
+
+%More space between paragraphs
+\RequirePackage{parskip}
+
+\input{theme.tex}
+
+%Make underscore behave normal
+\catcode`\_11
+
+%Listings
+\RequirePackage{listings}
+\RequirePackage{realboxes} % For \Colorbox which works with verbatim inside
+\RequirePackage{mdframed} %For background and frame
+\RequirePackage{luacolor,lua-ul}% LuaLaTeX based improved color and underlining/highlighting support
+
+% By default, lua-ul's \highLight has to be used as \highLight[color]{text}, 
+% but moredelim=** needs a command which gets used as {\highLight[color] text}
+% Therefore we define \highLightSwitch as such a variant
+\DeclareDocumentCommand\highLightSwitch{m}{%
+  \luaul@setcolor{#1}%
+  \@highLight
+}
+
+% Define a new language with `literate` set to almost all characters. This allows line breaks on these characters. Otherwise long words would overflow.
+% From https://tex.stackexchange.com/questions/33459/how-to-deal-with-very-long-lines-that-do-not-contain-spaces/442402#442402
+\def\@tempA#1#2\@end{%
+    \@tempA@{#1}%
+    \ifx\relax#2\relax
+    \else
+        \@tempA#2\@end
+    \fi
+}
+\def\@tempA@#1{{\noexpand#1}{{\char`\noexpand#1 \allowbreak}}1 }
+\edef\@tempB{\noexpand\lstdefinelanguage{logfile}{%
+    columns=fixed,%
+    keepspaces=true,%
+    breaklines=true,%
+    literate=\@tempA 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!()*+,-./:;<=>?@[]_|`^"'\&\\\~\#\%\@end
+}}
+\@tempB
+
+% variables
+\newcommand{\VAR}[1]{#1}
+\newcommand{\BLOCK}[1]{#1}
+
+% Listing settings
+\lstset{
+    basicstyle={\listingstyle},
+    breakatwhitespace=false,
+    language=logfile,
+    breaklines=true,
+    keepspaces=true,
+    xleftmargin=-5pt,
+    xrightmargin=-5pt,
+    belowskip=0pt,
+    moredelim=**[is][\highLightSwitch{highlight}]{$$\{\{}{\}\}$$}, % Tell listings about our markers
+                                                                % ** indicate that it should be combined with other styles.
+}
+\lstnewenvironment{code}{
+    % To add the right spacing with previous paragraph
+    \vspace{\parskip}
+    \mdframed[backgroundcolor=codebg,linecolor=black,linewidth=1pt]
+}{
+    \endmdframed
+}
+
+% Table span multiple pages
+\RequirePackage{longtable}
+% Span full text width
+\setlength\LTleft{0pt}
+\setlength\LTright{0pt}
+
+% Define variables 
+\newcommand{\companyname}[1]{\newcommand{\@companyname}{#1}}
+\newcommand{\version}[1]{\newcommand{\@version}{#1}}
+
+% Remove indentation at start of paragraph
+\setlength\parindent{0pt}
+
+% Reduce space between items
+\RequirePackage{enumitem}
+\setlist{noitemsep}
+
+%Determine whether the title page is active (for background)
+\newtoggle{tpage}
+
+% Report date overridable by \reportdate
+\def\twodigits#1{\ifnum#1<10 0\fi\the#1}
+\newcommand{\@reportdate}{\leavevmode\hbox{\twodigits\day-\twodigits\month-\the\year}}
+\newcommand{\reportdate}[1]{\renewcommand{\@reportdate}{#1}}
+
+\renewcommand{\contentsname}{\VAR{table_of_contents}}
+
+% Issue severity headers
+\newcommand\critical{\subsection{\VAR{risk_sections.critical}}\def\issueseverity{critical}}
+\newcommand\high{\subsection{\VAR{risk_sections.high}}\def\issueseverity{high}}
+\newcommand\medium{\subsection{\VAR{risk_sections.medium}}\def\issueseverity{medium}}
+\newcommand\low{\subsection{\VAR{risk_sections.low}}\def\issueseverity{low}}
+\newcommand\none{\subsection{\VAR{risk_sections.none}}\def\issueseverity{none}}
+
+\newcommand{\@cvssscoretext}{\VAR{text.cvss_score}}
+
+% Colored issue header with white text for critical
+\newcommand{\issueheader}{
+    \rowcolor{\issueseverity}
+    \ifthenelse{\equal{\issueseverity}{critical}}{%
+        \textcolor{white}{\@cvssscoretext} & \textcolor{white}{\@cvss~-~\issueseverity}
+    }{%
+        \@cvssscoretext & \@cvss
+    }
+    \tabularnewline
+}
+
+% Table newline with hline
+\newcommand{\tnl}{
+    \\ \hline
+}
+
+%Issue counter
+\newcounter{issue}
+
+%Issue variables
+\newcommand{\cvss}[1]{\newcommand\@cvss{#1}}
+\newcommand{\description}[1]{\newcommand\@description{#1}}
+\newcommand{\solution}[1]{\newcommand\@solution{#1}}
+\newcommand{\location}[1]{\newcommand\@location{#1}}
+\newcommand{\cvssvector}[1]{\newcommand\@cvssvector{#1}}
+
+%Issue environment
+\newenvironment{issue}[1]{
+    \stepcounter{issue}
+    \newcommand{\@issuetitle}{#1}
+    \subsubsection{\@issuetitle}
+}{
+    ~\par
+    {\tablestyle[default]
+    \disablealternatecolors
+    \begin{tabularx}{\textwidth}{|>{\bfseries}l|X|}
+        \theadstart
+        \multicolumn{2}{|l|}{\textbf{\VAR{text.finding} \theissue:}~\@issuetitle} \\
+        \tbody
+        \issueheader
+        \hline
+        \VAR{text.description} & \@description \tnl
+        \VAR{text.solution} & \@solution \tnl
+        \VAR{text.location} & \@location \tnl
+        \VAR{text.cvss_vector} & \@cvssvector \tnl
+        \tend
+    \end{tabularx}
+    \par}
+}
+
+\newcommand{\findingtablebox}[1]{
+    \parbox[c][][c]{\textwidth}{
+        \vspace{.5\baselineskip}
+        #1
+        \vspace{-.5\baselineskip}
+    }
+}
+
+\newcommand{\findingtable}[5]{
+    \newcommand{\@findingtable}{
+        ~\par
+        {\tablestyle[sansbold]
+        \disablealternatecolors
+        \begin{tabularx}{\textwidth}{|l|X|}
+            \theadstart
+            \thead \VAR{text.classification} & \thead \VAR{text.finding} \tnl
+            \tbody
+            \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \findingtablebox{#1} \tnl
+            \cellcolor{high}\VAR{risks.high} & \findingtablebox{#2} \tnl
+            \cellcolor{medium}\VAR{risks.medium} & \findingtablebox{#3} \tnl
+            \cellcolor{low}\VAR{risks.low} & \findingtablebox{#4} \tnl
+            \cellcolor{none}\VAR{risks.none} & \findingtablebox{#5} \tnl
+            \tend
+        \end{tabularx}
+        \par}
+    }
+}
+
+\newenvironment{evidence}[1]{
+    ~\newline\underline{#1}\newline\newline
+}{}
+
+\newcommand{\image}[1]{\includegraphics[width=\textwidth]{#1}}
+\newcommand{\signature}[1]{\includegraphics[align=t,width=3cm]{#1}}
+
+% Table with amount of findings per risk level
+\newcommand\numfindings[1]{\newcommand{\@numfindings}{#1}}
+\newcommand\numcritical[1]{\newcommand{\@numcritical}{#1}}
+\newcommand\numhigh[1]{\newcommand{\@numhigh}{#1}}
+\newcommand\nummedium[1]{\newcommand{\@nummedium}{#1}}
+\newcommand\numlow[1]{\newcommand{\@numlow}{#1}}
+\newcommand\numnone[1]{\newcommand{\@numnone}{#1}}
+\newcommand{\@shortFindingtable}{
+    ~\par
+    {\tablestyle[default]
+    \disablealternatecolors
+    \begin{tabularx}{\textwidth}{|l|X|}
+        \tbody
+        \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \@numcritical \tnl
+        \cellcolor{high}{\VAR{risks.high}} & \@numhigh \tnl
+        \cellcolor{medium}{\VAR{risks.medium}} & \@nummedium \tnl
+        \cellcolor{low}{\VAR{risks.low}} & \@numlow \tnl
+        \cellcolor{none}{\VAR{risks.none}} & \@numnone \\
+        \tend
+    \end{tabularx}
+    \par}
+}
+
+\newcommand{\conclusion}[1]{\newcommand{\@conclusion}{#1}}

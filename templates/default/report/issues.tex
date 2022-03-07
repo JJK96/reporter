@@ -1,0 +1,10 @@
+\BLOCK{ for severity, issues in issues.items() }
+    \BLOCK{ if issues }
+        \\VAR{severity}
+    \BLOCK{ endif }
+
+    \BLOCK{ for issue in issues }
+    \VAR{issue.latex}
+    \BLOCK{ endfor }
+\BLOCK{ endfor }
+

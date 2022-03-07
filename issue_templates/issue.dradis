@@ -1,0 +1,17 @@
+#[Title]#
+{{title}}
+
+#[CVSSv3.BaseScore]#
+{{cvss_score}}
+
+#[CVSSv3Vector]#
+{{cvss_vector}}
+
+#[Type]#
+Internal | External
+
+#[Description]#
+
+#[Solution]#
+
+#[References]#
