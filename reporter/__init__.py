@@ -1,26 +1,36 @@
 from .reporter import Template, template
 from .config import (OUTPUT_DIR, ISSUE_DIR, STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
-                     DEFAULTS, BIN_DIR, ISSUE_NAME, ISSUE_TEMPLATES_DIR, DEFAULT_TEMPLATE)
+                     DEFAULTS, BIN_DIR, ISSUE_NAME, ISSUE_TEMPLATES_DIR, DEFAULT_TEMPLATE,
+                     DEFAULT_LANGUAGE)
 from jinja2 import Environment, FileSystemLoader
 import re
 import os
 import shutil
 from pathlib import Path
+from datetime import date
+from deepmerge import always_merger
 
 
-def init(output_dir='.', type="web_pentest", title="Title of the project", company="Company B.V.", testtime=40):
+def init(template_name=DEFAULT_TEMPLATE, language=DEFAULT_LANGUAGE, output_dir='.', type="pentest", 
+         title="Title of the project", company="Company B.V.", testtime=40,
+         startdate=None, enddate=None):
     """Initiate a new report"""
     shutil.copytree(REPORT_INIT_DIR, output_dir)
     # Move git directory to .git
     git_path = Path(os.path.join(output_dir, 'git'))
     if git_path.exists():
         os.rename(git_path, os.path.join(output_dir, '.git'))
-    content = {
+
+    tmpl = Template(template_name, language=language)
+    static = tmpl.load_static_content()
+    content = always_merger.merge({
         "report_type": type,
         "title": title,
         "company": company,
         "testtime": testtime,
-    }
+        "startdate": startdate,
+        "enddate": enddate,
+    }, static)
     template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue"])
     print(f"Created a new report in {output_dir}")
 
@@ -108,16 +118,20 @@ def main():
     import argparse
 
     def generate_caller(args):
-        template = Template(args.template)
+        template = Template(args.template, language=args.language)
         template.reporter.generate()
 
     def init_caller(args):
         init(
+            args.template,
+            args.language,
             output_dir=args.output_dir,
             type=args.type,
             title=args.title,
             company=args.company,
             testtime=args.testtime,
+            startdate=args.startdate,
+            enddate=args.enddate,
         )
 
     def clean_caller(args):
@@ -149,14 +163,19 @@ def main():
 
     generate_parser = subparsers.add_parser("generate", help="Generate a report")
     generate_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
+    generate_parser.add_argument("--language", "-l", help="Language", default=DEFAULT_LANGUAGE)
     generate_parser.set_defaults(func=generate_caller)
 
     init_parser = subparsers.add_parser("init", help="Inititate a new report")
     init_parser.add_argument("output_dir", help="Directory to create the new report in")
-    init_parser.add_argument("-t", "--type", choices=["pentest"], default="pentest", help="Type of the report")
+    init_parser.add_argument("--type", choices=["pentest"], default="pentest", help="Type of the report")
     init_parser.add_argument("--title", help="Title of the project", default="Title of the project")
     init_parser.add_argument("-c", "--company", help="Company name", default="Company B.V.")
     init_parser.add_argument("--testtime", help="Time for the test in hours", default=40, type=int)
+    init_parser.add_argument("--startdate", help="Start date of the test", default=date.today().strftime("%Y-%m-%d"))
+    init_parser.add_argument("--enddate", help="End date of the test", default=date.today().strftime("%Y-%m-%d"))
+    init_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
+    init_parser.add_argument("--language", "-l", help="Language", default=DEFAULT_LANGUAGE)
     init_parser.set_defaults(func=init_caller)
 
     create_issue_parser = subparsers.add_parser("create-issue", help="Create a new issue")

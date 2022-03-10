@@ -149,29 +149,7 @@
 \newcommand{\location}[1]{\newcommand\@location{#1}}
 \newcommand{\cvssvector}[1]{\newcommand\@cvssvector{#1}}
 
-%Issue environment
-\newenvironment{issue}[1]{
-    \stepcounter{issue}
-    \newcommand{\@issuetitle}{#1}
-    \subsubsection{\@issuetitle}
-}{
-    ~\par
-    {\tablestyle[default]
-    \disablealternatecolors
-    \begin{tabularx}{\textwidth}{|>{\bfseries}l|X|}
-        \theadstart
-        \multicolumn{2}{|l|}{\textbf{\VAR{text.finding} \theissue:}~\@issuetitle} \\
-        \tbody
-        \issueheader
-        \hline
-        \VAR{text.description} & \@description \tnl
-        \VAR{text.solution} & \@solution \tnl
-        \VAR{text.location} & \@location \tnl
-        \VAR{text.cvss_vector} & \@cvssvector \tnl
-        \tend
-    \end{tabularx}
-    \par}
-}
+\input{issue_env.tex}
 
 \newcommand{\findingtablebox}[1]{
     \parbox[c][][c]{\textwidth}{
@@ -181,25 +159,7 @@
     }
 }
 
-\newcommand{\findingtable}[5]{
-    \newcommand{\@findingtable}{
-        ~\par
-        {\tablestyle[sansbold]
-        \disablealternatecolors
-        \begin{tabularx}{\textwidth}{|l|X|}
-            \theadstart
-            \thead \VAR{text.classification} & \thead \VAR{text.finding} \tnl
-            \tbody
-            \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \findingtablebox{#1} \tnl
-            \cellcolor{high}\VAR{risks.high} & \findingtablebox{#2} \tnl
-            \cellcolor{medium}\VAR{risks.medium} & \findingtablebox{#3} \tnl
-            \cellcolor{low}\VAR{risks.low} & \findingtablebox{#4} \tnl
-            \cellcolor{none}\VAR{risks.none} & \findingtablebox{#5} \tnl
-            \tend
-        \end{tabularx}
-        \par}
-    }
-}
+\input{findingtable.tex}
 
 \newenvironment{evidence}[1]{
     ~\newline\underline{#1}\newline\newline
@@ -215,20 +175,5 @@
 \newcommand\nummedium[1]{\newcommand{\@nummedium}{#1}}
 \newcommand\numlow[1]{\newcommand{\@numlow}{#1}}
 \newcommand\numnone[1]{\newcommand{\@numnone}{#1}}
-\newcommand{\@shortFindingtable}{
-    ~\par
-    {\tablestyle[default]
-    \disablealternatecolors
-    \begin{tabularx}{\textwidth}{|l|X|}
-        \tbody
-        \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \@numcritical \tnl
-        \cellcolor{high}{\VAR{risks.high}} & \@numhigh \tnl
-        \cellcolor{medium}{\VAR{risks.medium}} & \@nummedium \tnl
-        \cellcolor{low}{\VAR{risks.low}} & \@numlow \tnl
-        \cellcolor{none}{\VAR{risks.none}} & \@numnone \\
-        \tend
-    \end{tabularx}
-    \par}
-}
 
 \newcommand{\conclusion}[1]{\newcommand{\@conclusion}{#1}}

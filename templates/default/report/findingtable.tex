@@ -1,0 +1,35 @@
+\newcommand{\findingtable}[5]{
+    \newcommand{\@findingtable}{
+        ~\par
+        {\tablestyle[sansbold]
+        \disablealternatecolors
+        \begin{tabularx}{\textwidth}{|l|X|}
+            \theadstart
+            \thead \VAR{text.classification} & \thead \VAR{text.finding} \tnl
+            \tbody
+            \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \findingtablebox{#1} \tnl
+            \cellcolor{high}\VAR{risks.high} & \findingtablebox{#2} \tnl
+            \cellcolor{medium}\VAR{risks.medium} & \findingtablebox{#3} \tnl
+            \cellcolor{low}\VAR{risks.low} & \findingtablebox{#4} \tnl
+            \cellcolor{none}\VAR{risks.none} & \findingtablebox{#5} \tnl
+            \tend
+        \end{tabularx}
+        \par}
+    }
+}
+
+\newcommand{\@shortFindingtable}{
+    ~\par
+    {\tablestyle[default]
+    \disablealternatecolors
+    \begin{tabularx}{\textwidth}{|l|X|}
+        \tbody
+        \cellcolor{critical}\textcolor{white}{\VAR{risks.critical}} & \@numcritical \tnl
+        \cellcolor{high}{\VAR{risks.high}} & \@numhigh \tnl
+        \cellcolor{medium}{\VAR{risks.medium}} & \@nummedium \tnl
+        \cellcolor{low}{\VAR{risks.low}} & \@numlow \tnl
+        \cellcolor{none}{\VAR{risks.none}} & \@numnone \\
+        \tend
+    \end{tabularx}
+    \par}
+}

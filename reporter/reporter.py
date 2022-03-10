@@ -8,7 +8,8 @@ from collections import defaultdict, OrderedDict
 from .cvss import score_to_severity
 from .config import (severities, OUTPUT_DIR, ISSUE_DIR, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
-                     REPORT_FILE, DEFAULTS, BIN_DIR, ISSUE_NAME, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB)
+                     REPORT_FILE, DEFAULTS, BIN_DIR, ISSUE_NAME, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB,
+                     DEFAULT_LANGUAGE)
 import importlib
 import yaml
 import subprocess
@@ -164,8 +165,9 @@ def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".
 
 
 class Template:
-    def __init__(self, name=BASE_TEMPLATE):
+    def __init__(self, name=BASE_TEMPLATE, language=DEFAULT_LANGUAGE, **kwargs):
         self.name = name
+        self.language = language
         self.dir = os.path.join(TEMPLATES_DIR, name)
         self.STATIC_CONTENT_DIR = os.path.join(self.dir, STATIC_CONTENT_DIR)
         self.REPORT_TEMPLATE_DIR = os.path.join(self.dir, REPORT_TEMPLATE_DIR)
@@ -173,7 +175,7 @@ class Template:
         self.DYNAMIC_TEXT_LIB = os.path.join(self.dir, DYNAMIC_TEXT_LIB)
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
-        self.reporter = self.reporter_class(self)
+        self.reporter = self.reporter_class(self, **kwargs)
         self.defaults = self.get_defaults()
 
     @property
@@ -195,23 +197,22 @@ class Template:
         else:
             return DEFAULTS
 
+    def load_static_content(self):
+        lang = load_content(os.path.join(self.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
+        general = load_content(os.path.join(self.STATIC_CONTENT_DIR, "general.yaml"))
+        return always_merger.merge(lang, general)
+
 
 class Reporter:
-    def __init__(self, template=None, language="en", output_dir=OUTPUT_DIR, report_filename="report.pdf", issue_dir=ISSUE_DIR):
+    def __init__(self, template=None, output_dir=OUTPUT_DIR, report_filename="report.pdf", issue_dir=ISSUE_DIR):
         if template:
             self.template = template
         else:
             self.template = Template(BASE_TEMPLATE)
-        self.language = language
         self.output_dir = output_dir
         self.report_filename = report_filename
         self.issue_dir = issue_dir
         self.output_file = os.path.join(self.output_dir, self.report_filename)
-
-    def load_static_content(self):
-        lang = load_content(os.path.join(self.template.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
-        general = load_content(os.path.join(self.template.STATIC_CONTENT_DIR, "general.yaml"))
-        return always_merger.merge(lang, general)
 
     def copy_files(self, dir, no_overwrite=[]):
         for path in os.listdir(dir):
@@ -244,7 +245,7 @@ class Reporter:
             spec = importlib.util.spec_from_file_location("template_dynamic_text", self.template.DYNAMIC_TEXT_LIB)
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            generator_class = mod.generators.get(self.language)
+            generator_class = mod.generators.get(self.template.language)
             generator = generator_class(content)
             generator.generate()
         except FileNotFoundError:
@@ -270,7 +271,7 @@ class Reporter:
             raise Exception(f"{REPORT_FILE} does not exist, are you in the right directory?")
 
         # Load static content used for jinja templating
-        content = self.load_static_content()
+        content = self.template.load_static_content()
 
         # Load issues from issue_dir and add to the jinja content
         self.add_issues_and_stats(content)

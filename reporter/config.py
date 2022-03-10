@@ -16,6 +16,8 @@ DEFAULT_TEMPLATE = "default"
 
 BASE_TEMPLATE = "default"
 
+DEFAULT_LANGUAGE = "nl"
+
 # Directory with templates
 TEMPLATES_DIR = join(dir, "../templates")
 

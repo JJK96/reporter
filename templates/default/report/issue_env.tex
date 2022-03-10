@@ -1,0 +1,23 @@
+%Issue environment
+\newenvironment{issue}[1]{
+    \stepcounter{issue}
+    \newcommand{\@issuetitle}{#1}
+    \subsubsection{\@issuetitle}
+}{
+    ~\par
+    {\tablestyle[default]
+    \disablealternatecolors
+    \begin{tabularx}{\textwidth}{|>{\bfseries}l|X|}
+        \theadstart
+        \multicolumn{2}{|l|}{\textbf{\VAR{text.finding} \theissue:}~\@issuetitle} \\
+        \tbody
+        \issueheader
+        \hline
+        \VAR{text.description} & \@description \tnl
+        \VAR{text.solution} & \@solution \tnl
+        \VAR{text.location} & \@location \tnl
+        \VAR{text.cvss_vector} & \@cvssvector \tnl
+        \tend
+    \end{tabularx}
+    \par}
+}
