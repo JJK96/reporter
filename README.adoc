@@ -77,17 +77,30 @@ Installing the plugins is recommended. The LaTeX report can be compiled by click
 
 == How it works
 
-The directory `templates/default/report` contains a LaTeX template with jinja tags. This LaTeX template contains no text, all text is loaded using jinja. For creating the jinja context, several sources of information are used:
+On a high level, the application uses a LaTeX Jinja template and several sources of information provided through either a given template or a given report to compile a PDF file.
 
-1. Static content. This content is stored in the directory `templates/default/static_content` and contains all static strings and pieces of text.
-2. Issues and evidences. The directory `issues` in a report contains all issues and evidences for the report. These issues are parsed and merged with the jinja context.
-3. Dynamic content. Based on the loaded issues, some dynamic content is generated, such as summaries and counts.
+The directory `templates` contains several report templates. A template contains the content and templates for a report. The default template `templates/default` is used as a fallback for files that have not been overridden in other templates.
+A template contains the following information:
+
+* The LaTeX template in `./report`. The LaTeX template contains no text, all text is loaded using jinja. 
+* Static images in `./static_images`, these images can be used by the template
+* Static content in `./static_content`, this content contains text and placeholders that will be used during jinja templating. Based on the selected language, the correct static content is loaded.
+* Dynamic content based on issues, such as counts, summaries, etc.
+* Dynamic content in `./dynamic_text.py`, this Python module is optionally included and can be used to add information to the jinja context using Python scripts.
+* `./reporter.py` can be used to override the Reporter class in `reporter/reporter.py` for advanced customization.
+
+In addition to the information provided by the template, information from the report is added:
+
+* `./report.tex` contains user-provided information that should be added to the report
+* Issues and evidences. The directory `issues` in a report contains all issues and evidences for the report. These issues are parsed and merged with the jinja context.
+
+=== Compilation steps
 
 The steps for compiling the report are as follows:
 
 1. Create the `.cache` directory in which the report is built.
 2. Symlink all files in the report directory to the `.cache` directory.
-3. Template all the LaTeX files and store them in the `.cache` directory.
+3. Template all the LaTeX files from the template and store them in the `.cache` directory.
 4. Copy the necessary supportive files. These files are stored in `necessary_files` and contain a Makefile used to build the project and some other necessary files.
 5. Run Make in the `.cache` directory to build the report
 6. Copy the report PDF file to the report directory.
@@ -98,7 +111,11 @@ When symlinking files from the report directory to `.cache`, the symlinked filen
 
 === Dradis/Textile parsing
 
-For Textile parsing of Dradis content https://gitlab.local.northwave.nl/janjaap.korpershoek/textile_parser[Textile-Parser ] is used. This library parses a Dradis file and returns a dictionary containing all fields. The markup in the fields, like bullets, footnotes, etc. is converted to LaTeX and is inserted directly in the resulting Dradis Issue.
+For Textile parsing of Dradis content https://github.com/JJK96/textile_parser[Textile-Parser] is used. This library parses a Dradis file and returns a dictionary containing all fields. The markup in the fields, like bullets, footnotes, etc. is converted to LaTeX and is inserted directly in the resulting Dradis Issue.
+
+=== Report initiation
+
+When running `reporter init`, the `report_init` directory is used to create a new report. A template is loaded and files in the directory are templated using jinja, based on the static content in the template.
 
 === The LaTeX template
 
