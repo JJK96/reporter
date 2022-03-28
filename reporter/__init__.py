@@ -30,8 +30,9 @@ def init(template_name=DEFAULT_TEMPLATE, language=config.get('language'), output
         "testtime": testtime,
         "startdate": startdate,
         "enddate": enddate,
+        "language": language,
     }, static)
-    template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue"])
+    template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
 
 
@@ -173,7 +174,7 @@ def main():
     create_issue_parser.set_defaults(func=create_issue_caller)
 
     create_evidence_parser = subparsers.add_parser("create-evidence", aliases=['ce'], help="Create a new evidence")
-    create_evidence_parser.add_argument("location", help="Where you found the issue")
+    create_evidence_parser.add_argument("-l", "--location", help="Where you found the issue", required=config.get('default_location') is None, default=config.get('default_location'))
     create_evidence_parser.add_argument("-o", "--output_file", default=None)
     create_evidence_parser.set_defaults(func=create_evidence_caller)
 
