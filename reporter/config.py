@@ -14,6 +14,8 @@ dir = realpath(dirname(__file__))
 
 DEFAULT_TEMPLATE = "default"
 
+DEFAULT_LANGUAGE = "en"
+
 BASE_TEMPLATE = "default"
 
 # Directory with templates
@@ -69,11 +71,12 @@ DEFAULTS = {
     # Filename of main latex file for report
     "report_file": 'report.tex',
     "report_output_file": 'report.pdf',
-    "language": "nl",
+    "language": DEFAULT_LANGUAGE,
     # Standard name of issue
     "issue_name": "issue.dradis",
     "output_dir": '.cache',
     "issue_dir": 'issues',
+    "template": DEFAULT_TEMPLATE,
 }
 
 parser = configparser.ConfigParser()

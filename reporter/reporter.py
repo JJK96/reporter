@@ -61,8 +61,10 @@ def load_issue_evidence(filename):
 
 def load_evidence(evidence):
     content = load_issue_evidence(evidence)
-    if not content.get('location', config.get('default_location')):
-        raise Exception(f"Evidence: {evidence} has no location and no default location is set")
+    if not content.get('location'):
+        content['location'] = config.get('default_location')
+        if not content['location']:
+            raise Exception(f"Evidence: {evidence} has no location and no default location is set")
     return content
 
 

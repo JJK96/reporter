@@ -1,6 +1,6 @@
 from .reporter import Template, template
 from .config import (STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
-                     BIN_DIR, ISSUE_TEMPLATES_DIR, DEFAULT_TEMPLATE, config)
+                     BIN_DIR, ISSUE_TEMPLATES_DIR, config)
 from .util import find_report_root
 from jinja2 import Environment, FileSystemLoader
 import re
@@ -11,7 +11,7 @@ from datetime import date
 from deepmerge import always_merger
 
 
-def init(template_name=DEFAULT_TEMPLATE, language=config.get('language'), output_dir='.', type="pentest", 
+def init(template_name=config.get('template'), language=config.get('language'), output_dir='.', type="pentest", 
          title="Title of the project", company="Company B.V.", testtime=40,
          startdate=None, enddate=None):
     """Initiate a new report"""
@@ -31,6 +31,7 @@ def init(template_name=DEFAULT_TEMPLATE, language=config.get('language'), output
         "startdate": startdate,
         "enddate": enddate,
         "language": language,
+        "template": template_name,
     }, static)
     template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
@@ -149,7 +150,7 @@ def main():
     subparsers = parser.add_subparsers(help='Subcommands')
 
     generate_parser = subparsers.add_parser("generate", help="Generate a report")
-    generate_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
+    generate_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
     generate_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     generate_parser.set_defaults(func=generate_caller)
 
@@ -161,7 +162,7 @@ def main():
     init_parser.add_argument("--testtime", help="Time for the test in hours", default=40, type=int)
     init_parser.add_argument("--startdate", help="Start date of the test", default=date.today().strftime("%Y-%m-%d"))
     init_parser.add_argument("--enddate", help="End date of the test", default=date.today().strftime("%Y-%m-%d"))
-    init_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
+    init_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
     init_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     init_parser.set_defaults(func=init_caller)
 
