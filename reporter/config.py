@@ -1,4 +1,6 @@
 from os.path import realpath, dirname, join
+import configparser
+from .util import find_report_root, ReportRootNotFound
 
 severities = [
     "critical",
@@ -8,15 +10,11 @@ severities = [
     "none",
 ]
 
-OUTPUT_DIR = '.cache'
-ISSUE_DIR = 'issues'
 dir = realpath(dirname(__file__))
 
 DEFAULT_TEMPLATE = "default"
 
 BASE_TEMPLATE = "default"
-
-DEFAULT_LANGUAGE = "nl"
 
 # Directory with templates
 TEMPLATES_DIR = join(dir, "../templates")
@@ -30,26 +28,14 @@ NECESSARY_FILES_DIR = join(dir, "../necessary_files")
 # Directory with files for initiating a new report
 REPORT_INIT_DIR = join(dir, "../report_init")
 
-# Filename of main latex file for report
-REPORT_FILE = 'report.tex'
-
 # Directory containing standard issues
 STANDARD_ISSUE_DIR = join(dir, "../standard-issue-library")
 
 # Directory with bash scripts that can be executed
 BIN_DIR = join(dir, "../bin")
 
-# Standard name of issue
-ISSUE_NAME = "issue.dradis"
-
-# Some default values
-DEFAULTS = {
-    "issue": {
-        "title": "Title of the issue",
-        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-        "cvss_score": "0.0",
-    }
-}
+# Report config file name
+REPORT_CONFIG = "reporter.ini"
 
 #########
 # Directories within template
@@ -68,3 +54,39 @@ DYNAMIC_TEXT_LIB = "dynamic_text.py"
 CONFIG_LIB = "config.py"
 
 REPORTER_LIB = "reporter.py"
+
+########
+# Overridable settings
+# These settings can be overridden in a report-specific config file
+########
+
+DEFAULTS = {
+    # Some default values
+    "issue_title": "Title of the issue",
+    "issue_filename": "issue.dradis",
+    "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+    "cvss_score": "0.0",   
+    # Filename of main latex file for report
+    "report_file": 'report.tex',
+    "report_output_file": 'report.pdf',
+    "language": "nl",
+    # Standard name of issue
+    "issue_name": "issue.dradis",
+    "output_dir": '.cache',
+    "issue_dir": 'issues',
+}
+
+parser = configparser.ConfigParser()
+parser['DEFAULT'] = DEFAULTS
+
+try:
+    report_root = find_report_root()    
+    parser.read(join(report_root, REPORT_CONFIG))
+except ReportRootNotFound:
+    # If not in a report dir, just do nothing
+    pass
+
+try:
+    config = parser['report']
+except KeyError:
+    config = parser['DEFAULT']

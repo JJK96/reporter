@@ -6,10 +6,9 @@ from pathlib import Path
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 from .cvss import score_to_severity
-from .config import (severities, OUTPUT_DIR, ISSUE_DIR, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
+from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
-                     REPORT_FILE, DEFAULTS, BIN_DIR, ISSUE_NAME, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB,
-                     DEFAULT_LANGUAGE)
+                     BIN_DIR, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
 import yaml
 import subprocess
@@ -62,8 +61,8 @@ def load_issue_evidence(filename):
 
 def load_evidence(evidence):
     content = load_issue_evidence(evidence)
-    if not content.get('location'):
-        raise Exception(f"Evidence: {evidence} has no location")
+    if not content.get('location', config.get('default_location')):
+        raise Exception(f"Evidence: {evidence} has no location and no default location is set")
     return content
 
 
@@ -165,7 +164,7 @@ def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".
 
 
 class Template:
-    def __init__(self, name=BASE_TEMPLATE, language=DEFAULT_LANGUAGE, **kwargs):
+    def __init__(self, name=BASE_TEMPLATE, language=config.get('language'), **kwargs):
         self.name = name
         self.language = language
         self.dir = os.path.join(TEMPLATES_DIR, name)
@@ -176,7 +175,6 @@ class Template:
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
         self.reporter = self.reporter_class(self, **kwargs)
-        self.defaults = self.get_defaults()
 
     @property
     def reporter_class(self):
@@ -188,15 +186,6 @@ class Template:
         else:
             return Reporter
 
-    def get_defaults(self):
-        if Path(self.CONFIG_LIB).exists():
-            spec = importlib.util.spec_from_file_location("template_config", self.CONFIG_LIB)
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            return mod.DEFAULTS
-        else:
-            return DEFAULTS
-
     def load_static_content(self):
         lang = load_content(os.path.join(self.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
         general = load_content(os.path.join(self.STATIC_CONTENT_DIR, "general.yaml"))
@@ -204,7 +193,7 @@ class Template:
 
 
 class Reporter:
-    def __init__(self, template=None, output_dir=OUTPUT_DIR, report_filename="report.pdf", issue_dir=ISSUE_DIR):
+    def __init__(self, template=None, output_dir=config.get('output_dir'), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir')):
         if template:
             self.template = template
         else:
@@ -267,8 +256,8 @@ class Reporter:
         """Generate a report"""
 
         # Check if REPORT_FILE exists
-        if not Path(REPORT_FILE).exists():
-            raise Exception(f"{REPORT_FILE} does not exist, are you in the right directory?")
+        if not Path(config.get('report_file')).exists():
+            raise Exception(f"{config.get('report_file')} does not exist, are you in the right directory?")
 
         # Load static content used for jinja templating
         content = self.template.load_static_content()

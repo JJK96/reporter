@@ -1,7 +1,7 @@
 from .reporter import Template, template
-from .config import (OUTPUT_DIR, ISSUE_DIR, STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
-                     DEFAULTS, BIN_DIR, ISSUE_NAME, ISSUE_TEMPLATES_DIR, DEFAULT_TEMPLATE,
-                     DEFAULT_LANGUAGE)
+from .config import (STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
+                     BIN_DIR, ISSUE_TEMPLATES_DIR, DEFAULT_TEMPLATE, config)
+from .util import find_report_root
 from jinja2 import Environment, FileSystemLoader
 import re
 import os
@@ -11,7 +11,7 @@ from datetime import date
 from deepmerge import always_merger
 
 
-def init(template_name=DEFAULT_TEMPLATE, language=DEFAULT_LANGUAGE, output_dir='.', type="pentest", 
+def init(template_name=DEFAULT_TEMPLATE, language=config.get('language'), output_dir='.', type="pentest", 
          title="Title of the project", company="Company B.V.", testtime=40,
          startdate=None, enddate=None):
     """Initiate a new report"""
@@ -56,26 +56,12 @@ def create_issue(
     print(f"Created issue in {output_file}")
 
 
-def find_report_root():
-    """Find the root directory of the report"""
-
-    current_dir = Path(".")
-
-    # Go up a directory 3 times
-    for i in range(3):
-        if "issues" in os.listdir(current_dir):
-            return os.path.realpath(current_dir)
-        else:
-            current_dir = current_dir.resolve().parent
-    raise Exception("Could not find issue dir, ensure that you are running the script from your report directory.")
-
-
 def create_standard_issue(input_file, output_file=None):
     if not output_file:
         basename = os.path.basename(input_file)
         lang, rest = basename.split("_")
         dirname, _ = os.path.splitext(rest)
-        output_file = os.path.join(find_report_root(), ISSUE_DIR, dirname, ISSUE_NAME)
+        output_file = os.path.join(find_report_root(), config.get('issue_dir'), dirname, config.get('issue_name'))
     os.makedirs(os.path.dirname(output_file))
     src = os.path.join(STANDARD_ISSUE_DIR, input_file)
     shutil.copy(src, output_file)
@@ -111,7 +97,7 @@ def create_evidence(location="unknown", output_file=None):
 def clean():
     """Clean current report of build files"""
     root = find_report_root()
-    shutil.rmtree(os.path.join(root, OUTPUT_DIR))
+    shutil.rmtree(os.path.join(root, config.get('output_dir')))
 
 
 def main():
@@ -144,7 +130,7 @@ def main():
         if not args.output_file:
             if not args.title:
                 raise Exception("Title is required when no output file or standard issue is given")
-            args.output_file = os.path.join(find_report_root(), ISSUE_DIR, slugify(args.title), "issue.dradis")
+            args.output_file = os.path.join(find_report_root(), config.get('issue_dir'), slugify(args.title), config.get('issue_filename'))
         create_issue(
             args.output_file,
             args.title,
@@ -163,7 +149,7 @@ def main():
 
     generate_parser = subparsers.add_parser("generate", help="Generate a report")
     generate_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
-    generate_parser.add_argument("--language", "-l", help="Language", default=DEFAULT_LANGUAGE)
+    generate_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     generate_parser.set_defaults(func=generate_caller)
 
     init_parser = subparsers.add_parser("init", help="Inititate a new report")
@@ -175,18 +161,18 @@ def main():
     init_parser.add_argument("--startdate", help="Start date of the test", default=date.today().strftime("%Y-%m-%d"))
     init_parser.add_argument("--enddate", help="End date of the test", default=date.today().strftime("%Y-%m-%d"))
     init_parser.add_argument("--template", "-t", help="Template to use", default=DEFAULT_TEMPLATE)
-    init_parser.add_argument("--language", "-l", help="Language", default=DEFAULT_LANGUAGE)
+    init_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     init_parser.set_defaults(func=init_caller)
 
-    create_issue_parser = subparsers.add_parser("create-issue", help="Create a new issue")
+    create_issue_parser = subparsers.add_parser("create-issue", aliases=['ci'], help="Create a new issue",)
     create_issue_parser.add_argument("-s", "--standard-issue", help="Create based on the given standard issue")
     create_issue_parser.add_argument("--output_file", help="Output file to store the issue")
     create_issue_parser.add_argument("--title", help="Title of the issue")
-    create_issue_parser.add_argument("--cvss-vector", help="CVSS vector", default=DEFAULTS['issue']['cvss_vector'])
-    create_issue_parser.add_argument("--cvss-score", help="CVSS score", default=DEFAULTS['issue']['cvss_score'])
+    create_issue_parser.add_argument("--cvss-vector", help="CVSS vector", default=config.get('cvss_vector'))
+    create_issue_parser.add_argument("--cvss-score", help="CVSS score", default=config.get('cvss_score'))
     create_issue_parser.set_defaults(func=create_issue_caller)
 
-    create_evidence_parser = subparsers.add_parser("create-evidence", help="Create a new evidence")
+    create_evidence_parser = subparsers.add_parser("create-evidence", aliases=['ce'], help="Create a new evidence")
     create_evidence_parser.add_argument("location", help="Where you found the issue")
     create_evidence_parser.add_argument("-o", "--output_file", default=None)
     create_evidence_parser.set_defaults(func=create_evidence_caller)
@@ -194,7 +180,7 @@ def main():
     clean_parser = subparsers.add_parser("clean", help="Clean the given directory of build files")
     clean_parser.set_defaults(func=clean_caller)
 
-    create_standard_issue_parser = subparsers.add_parser("create-standard-issue", help="Search for a standard issue and create it (requires fzf)")
+    create_standard_issue_parser = subparsers.add_parser("create-standard-issue", aliases=['csi'], help="Search for a standard issue and create it (requires fzf)")
     create_standard_issue_parser.set_defaults(func=lambda _: run_command("create_standard_issue"))
 
     args = parser.parse_args()
