@@ -1,6 +1,8 @@
 #[Title]#
 {{title}}
 
+#[Label]#
+
 #[CVSSv3.BaseScore]#
 {{cvss_score}}
 

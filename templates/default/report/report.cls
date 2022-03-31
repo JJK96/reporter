@@ -8,6 +8,9 @@
 \RequirePackage{tabularx}
 \RequirePackage{tabulary} % For automatically fitting column widths based on content
 
+%Clicakble links
+\RequirePackage{hyperref}
+
 % Graphbox for vertically centering image in table, provides align option to \includegraphics
 \RequirePackage{graphbox} %loads graphicx package
 
@@ -30,6 +33,22 @@
 
 %Make underscore behave normal
 \catcode`\_11
+
+% Labels with custom text (used for referencing issues with the text of their issue number)
+% From: https://tex.stackexchange.com/questions/438876/how-to-cross-reference-text-with-a-custom-label-reference-text
+\newcommand{\mylabeltext}[3][]{%
+    \@bsphack%
+    \csname phantomsection\endcsname% in case hyperref is used
+    \def\tst{#1}%
+    \def\labelmarkup{\emph}% How to markup the label itself
+    %\def\refmarkup{\labelmarkup}% How to markup the reference
+    \def\refmarkup{}%
+    \ifx\tst\empty\def\@currentlabel{\refmarkup{#2}}{\label{#3}}%
+    \else\def\@currentlabel{\refmarkup{#1}}{\label{#3}}\fi%
+    \@esphack%
+    %\labelmarkup{#2}% visible printed text.
+    \message{Label `#3` defined.}
+}
 
 %Listings
 \RequirePackage{listings}

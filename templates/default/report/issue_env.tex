@@ -1,7 +1,12 @@
 %Issue environment
-\newenvironment{issue}[1]{
+\newenvironment{issue}[2][]{
     \stepcounter{issue}
-    \newcommand{\@issuetitle}{#1}
+    \newcommand{\@issuetitle}{#2}
+    \def\labeltmp{#1}
+    \ifx\labeltmp\@empty%
+    \else%
+        \mylabeltext{Issue \theissue}{\labeltmp}
+    \fi
     \subsubsection{\@issuetitle}
 }{
     ~\par
