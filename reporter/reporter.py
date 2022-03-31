@@ -81,21 +81,27 @@ class Issue:
         return score_to_severity(self.cvss_score)
 
 
-def load_issue(issue, evidences):
+def load_issue(issue):
     _, extension = os.path.splitext(issue)
     if extension == "tex":
         # The file is already a complete issue
         return read_file(issue)
-    evidences = map(load_evidence, evidences)
     content = load_issue_evidence(issue)
-    content['evidences'] = list(evidences)
     return Issue(
         latex=render_issue(content),
         content=content,
     )
 
 
-def load_issues(issue_dir):
+def load_issue_with_evidences(issue, evidences):
+    issue = load_issue(issue)
+    evidences = map(load_evidence, evidences)
+    issue.content['evidences'] = list(evidences)
+    issue.latex = render_issue(issue.content)
+    return issue
+
+
+def find_issues_and_evidences(issue_dir=config.get('issue_dir')):
     for dirpath, dnames, fnames in os.walk(issue_dir):
         relpath = os.path.relpath(dirpath, issue_dir)
         if relpath == '.':
@@ -110,7 +116,18 @@ def load_issues(issue_dir):
             else:
                 evidences.append(path)
         if issue:
-            yield load_issue(issue, evidences)
+            yield issue, evidences
+
+
+def load_issues_with_evidences(issue_dir=config.get('issue_dir')):
+    for issue, evidences in find_issues_and_evidences(issue_dir):
+        yield load_issue_with_evidences(issue, evidences)
+
+
+def load_issues(**kwargs):
+    for issue, _ in find_issues_and_evidences(**kwargs):
+        yield load_issue(issue)
+
 
 
 def create_issue_dict(issues):
@@ -120,7 +137,7 @@ def create_issue_dict(issues):
     ordered = OrderedDict()
     i = 0
     for k in severities:
-        v = sorted(issue_dict[k], key=lambda x: x.cvss_score)
+        v = sorted(issue_dict[k], key=lambda x: x.cvss_score, reverse=True)
         # Number the issues
         for issue in v:
             i += 1
@@ -248,7 +265,7 @@ class Reporter:
         pass
 
     def add_issues_and_stats(self, content):
-        issues = list(load_issues(self.issue_dir))
+        issues = list(load_issues_with_evidences(self.issue_dir))
         self.process_issues(content, issues)
         content['issues'] = create_issue_dict(issues)
         content['num_issues'] = len(issues)
