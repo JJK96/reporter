@@ -42,6 +42,7 @@ def create_issue(
         title="Issue title",
         cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
         cvss_score="0.0",
+        do_create_evidence=True,
         ):
     """Create a new issue"""
     content = {
@@ -52,23 +53,28 @@ def create_issue(
     env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
     template = env.get_template("issue.dradis")
     rendered = template.render(content)
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    dirname = os.path.dirname(output_file)
+    os.makedirs(dirname, exist_ok=True)
     with open(output_file, 'w') as f:
         f.write(rendered)
     print(f"Created issue in {output_file}")
+    if do_create_evidence:
+        create_evidence(location=config.get('default_location'), output_dir=dirname)
 
 
-def create_standard_issue(input_file, output_file=None):
+def create_standard_issue(input_file, output_file=None, do_create_evidence=True):
     if not output_file:
         basename = os.path.basename(input_file)
         lang, rest = basename.split("_")
         dirname, _ = os.path.splitext(rest)
         output_file = os.path.join(find_report_root(), config.get('issue_dir'), dirname, config.get('issue_name'))
-    os.makedirs(os.path.dirname(output_file))
+    dirname = os.path.dirname(output_file)
+    os.makedirs(dirname)
     src = os.path.join(STANDARD_ISSUE_DIR, input_file)
     shutil.copy(src, output_file)
     print(f"Created issue in {output_file}")
-
+    if do_create_evidence:
+        create_evidence(location=config.get('default_location'), output_dir=dirname)
 
 def slugify(filename):
     disallowed = r'[\\/:*?"<>|]'
@@ -84,10 +90,12 @@ def create_evidence_path(location):
     return filename
 
 
-def create_evidence(location="unknown", output_file=None):
+def create_evidence(location=None, output_file=None, output_dir='.'):
     """Create a new evidence"""
+    if not location:
+        location="unknown"
     if not output_file:
-        output_file = create_evidence_path(location)
+        output_file = os.path.join(output_dir, create_evidence_path(location))
     env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
     template = env.get_template("evidence.dradis")
     rendered = template.render(location=location)
