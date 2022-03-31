@@ -78,6 +78,8 @@
     belowskip=0pt,
     moredelim=**[is][\highLightSwitch{highlight}]{$$\{\{}{\}\}$$}, % Tell listings about our markers
                                                                 % ** indicate that it should be combined with other styles.
+    moredelim=**[is][\color{highlight1}]{$$*\{\{}{\}\}*$$}, % Tell listings about our markers
+                                                                % ** indicate that it should be combined with other styles.
 }
 \lstnewenvironment{code}{
     % To add the right spacing with previous paragraph
@@ -86,6 +88,8 @@
 }{
     \endmdframed
 }
+% Inline code
+\newcommand\codeinline{\lstinline[basicstyle={\lstinlinestyle}]}
 
 % Table span multiple pages
 \RequirePackage{longtable}
