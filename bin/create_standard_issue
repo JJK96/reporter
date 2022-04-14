@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-prev_dir=$(pwd)
-cd "${BASH_SOURCE%/*}/../standard-issue-library" || exit
+pushd "${BASH_SOURCE%/*}/../standard-issue-library" || exit
 filename=$(find . -type f -name "*.issue" | fzf)
-cd "$prev_dir"
+popd
 reporter create-issue -s "$filename"
