@@ -166,10 +166,14 @@
 \input{findingtable.tex}
 
 \newenvironment{evidence}[1]{
-    ~\newline\underline{#1}\newline\newline
+    \par%
+    \emergencystretch 3em% Avoid going over the end of the line
+    \underLine{#1}%
+    \par%
+    \fussy%
 }{}
 
-\newcommand{\image}[1]{\includegraphics[width=\textwidth]{#1}}
+\newcommand{\image}[1]{\includegraphics[width=\textwidth]{images/#1}}
 \newcommand{\signature}[1]{\includegraphics[align=t,width=3cm]{#1}}
 
 % Table with amount of findings per risk level
