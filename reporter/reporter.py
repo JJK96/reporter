@@ -271,6 +271,24 @@ class Reporter:
         content['num_issues'] = len(issues)
         content['num_severity'] = {k: len(v) for k, v in content['issues'].items()}
 
+    def add_config(self, content):
+        content['config'] = config
+
+    def get_content(self):
+        # Load static content used for jinja templating
+        content = self.template.load_static_content()
+
+        # Load issues from issue_dir and add to the jinja content
+        self.add_issues_and_stats(content)
+
+        # Add config to the content object
+        self.add_config(content)
+
+        # Add dynamic content/text to the content object
+        self.load_dynamic_content(content)
+
+        return content
+
     def generate(self):
         """Generate a report"""
 
@@ -278,14 +296,8 @@ class Reporter:
         if not Path(config.get('report_file')).exists():
             raise Exception(f"{config.get('report_file')} does not exist, are you in the right directory?")
 
-        # Load static content used for jinja templating
-        content = self.template.load_static_content()
-
-        # Load issues from issue_dir and add to the jinja content
-        self.add_issues_and_stats(content)
-
-        # Add dynamic content/text to the content object
-        self.load_dynamic_content(content)
+        # Get content
+        content = self.get_content()
 
         # Create output dir
         os.makedirs(self.output_dir, exist_ok=True)
