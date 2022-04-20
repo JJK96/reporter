@@ -256,7 +256,7 @@ class Reporter:
             generator_class = mod.generators.get(self.template.language)
             generator = generator_class(content)
             generator.generate()
-        except FileNotFoundError:
+        except (FileNotFoundError, NotImplementedError):
             # If there is no dynamic content, don't fail
             pass
 
