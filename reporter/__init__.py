@@ -1,7 +1,7 @@
 from .reporter import Template, template
 from .config import (STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
                      BIN_DIR, ISSUE_TEMPLATES_DIR, config)
-from .util import find_report_root
+from .util import find_report_root, slugify
 from jinja2 import Environment, FileSystemLoader
 import re
 import os
@@ -75,10 +75,6 @@ def create_standard_issue(input_file, output_file=None, do_create_evidence=True)
     print(f"Created issue in {output_file}")
     if do_create_evidence:
         create_evidence(location=config.get('default_location'), output_dir=dirname)
-
-def slugify(filename):
-    disallowed = r'[\\/:*?"<>|]'
-    return re.sub(disallowed, "_", filename)
 
 
 def create_evidence_path(location):

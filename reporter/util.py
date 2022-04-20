@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import re
 
 
 class ReportRootNotFound(Exception):
@@ -18,3 +19,8 @@ def find_report_root():
         else:
             current_dir = current_dir.resolve().parent
     raise ReportRootNotFound("Could not find issue dir, ensure that you are running the script from your report directory.")
+
+
+def slugify(filename):
+    disallowed = r'[\\/:*?"<>|]'
+    return re.sub(disallowed, "_", filename)
