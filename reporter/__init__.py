@@ -147,6 +147,10 @@ def main():
     def create_evidence_caller(args):
         create_evidence(args.location, args.output_file)
 
+    def finalize_caller(args):
+        template = Template(args.template, language=args.language)
+        template.reporter.finalize()
+
     def run_command(command):
         os.system(os.path.join(BIN_DIR, command))
 
@@ -188,6 +192,11 @@ def main():
 
     create_standard_issue_parser = subparsers.add_parser("create-standard-issue", aliases=['csi'], help="Search for a standard issue and create it (requires fzf)")
     create_standard_issue_parser.set_defaults(func=lambda _: run_command("create_standard_issue"))
+
+    finalize_parser = subparsers.add_parser("finalize", help="Copy the output report to a final version with a default name")
+    finalize_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
+    finalize_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
+    finalize_parser.set_defaults(func=finalize_caller)
 
     args = parser.parse_args()
     if hasattr(args, 'func'):

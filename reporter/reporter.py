@@ -222,6 +222,25 @@ class Reporter:
         self.issue_dir = issue_dir
         self.output_file = os.path.join(self.output_dir, self.report_filename)
 
+    @property
+    def final_report_filename(self):
+        return "final_report", ".pdf"
+
+    def inc_version(self, version):
+        if not version:
+            return "_v1"
+        else:
+            cur_version = int(version[2:])
+            return "_v{}".format(cur_version + 1)
+
+    def finalize(self):
+        src = self.output_file
+        dst, ext = self.final_report_filename
+        version = ""
+        while Path(dst + version + ext).exists():
+            version = self.inc_version(version)
+        shutil.copy(src, dst + version + ext)
+
     def copy_files(self, dir, no_overwrite=[]):
         for path in os.listdir(dir):
             src = os.path.join(dir, path)
