@@ -15,6 +15,17 @@ In order to use the provided functionality for creating standard issues, the pro
 
 To use the provided tooling for editing, installing Visual Studio Code is recommended, but not required.
 
+==== Mac OS
+
+    brew install --cask basictex
+    brew install fzf
+
+==== Ubuntu
+
+    sudo apt install texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-luatex latexmk fonts-open-sans
+
+Make sure you have at least texlive-luatex version 2021.20220204, so that lua-ul.sty is included.
+
 == Usage
 
 === Creating a new report
