@@ -4,8 +4,9 @@
 
 %Table styles
 \RequirePackage[table]{xcolor}
+\RequirePackage{tablestyles/tablestyles}
 \RequirePackage{tabularx}
-\RequirePackage{tablestyles}
+\RequirePackage{tabulary} % For automatically fitting column widths based on content
 
 % Graphbox for vertically centering image in table, provides align option to \includegraphics
 \RequirePackage{graphbox} %loads graphicx package
