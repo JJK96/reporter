@@ -1,7 +1,7 @@
 from .reporter import Template, template
-from .config import (STANDARD_ISSUE_DIR, REPORT_INIT_DIR,
-                     BIN_DIR, ISSUE_TEMPLATES_DIR, config)
-from .util import find_report_root, slugify
+from .config import (STANDARD_ISSUE_DIR, REPORT_INIT_DIR, REPORT_CONFIG,
+                     ENFORCE_VERSION, BIN_DIR, ISSUE_TEMPLATES_DIR, config)
+from .util import find_report_root, slugify, reporter_version
 from jinja2 import Environment, FileSystemLoader
 import re
 import os
@@ -32,6 +32,7 @@ def init(template_name=config.get('template'), language=config.get('language'), 
         "enddate": enddate,
         "language": language,
         "template": template_name,
+        "reporter_version": reporter_version,
     }, static)
     template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
@@ -110,6 +111,8 @@ def main():
     import argparse
 
     def generate_caller(args):
+        if ENFORCE_VERSION and config.get('reporter_version') != reporter_version:
+            raise Exception("This report should be compiled with reporter version {}, while you are using {}. Please install the correct version or change the reporter_version in the configuration file ({})".format(config.get('reporter_version'), reporter_version, REPORT_CONFIG))
         template = Template(args.template, language=args.language)
         template.reporter.generate()
 

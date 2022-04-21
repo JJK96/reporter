@@ -1,6 +1,6 @@
 from os.path import realpath, dirname, join
 import configparser
-from .util import find_report_root, ReportRootNotFound
+from .util import find_report_root, ReportRootNotFound, reporter_version
 
 severities = [
     "critical",
@@ -17,6 +17,9 @@ DEFAULT_TEMPLATE = "default"
 DEFAULT_LANGUAGE = "en"
 
 BASE_TEMPLATE = "default"
+
+# Enforec that the report is compiled with the correct version
+ENFORCE_VERSION = False
 
 # Directory with templates
 TEMPLATES_DIR = join(dir, "../templates")
@@ -77,6 +80,7 @@ DEFAULTS = {
     "output_dir": '.cache',
     "issue_dir": 'issues',
     "template": DEFAULT_TEMPLATE,
+    "reporter_version": reporter_version,
 }
 
 parser = configparser.ConfigParser()

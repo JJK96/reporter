@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 import re
+from importlib.metadata import version
+
+reporter_version = version('reporter')
 
 
 class ReportRootNotFound(Exception):
