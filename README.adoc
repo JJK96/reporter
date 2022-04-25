@@ -34,17 +34,26 @@ To create a new report, use the following command:
 
 ```
 reporter init <report_name>
+reporter init -l nl <report_name>
 ```
 
 This will create a new directory with the name <report_name> with the LaTeX template "report.tex" and the directory "issues" with one example issue. This new project is created based on the `report_init` directory.
 
 === Adding report content
 
+==== Report settings
+
+The settings for the report can be edited in `reporter.ini`. These settings include the preferred language, title of the report, company name, etc.
+
+==== Report content
+
+Other report content can be added in `report.tex`, the file should be self-explanatory.
+
 ==== Issue
 
 The report can be created by adding new issues to the issue directory. Each issue has it's own directory, with an arbitrary name. In the directory, the issue file should have a name that starts with "issue" or ends with ".issue". All other files in the directory are interpreted as evidence.
 
-To aid in creating an issue the command `create-issue` is provided:
+To aid in creating an issue the command `create-issue` (alias `ci`) is provided:
 
 ```
 reporter create-issue --title "This is the title"
@@ -60,7 +69,7 @@ This opens `fzf` with all the files in the standard issue library. There one iss
 
 ==== Evidence
 
-To aid in creating a new evidence, the command `create-evidence` is provided:
+To aid in creating a new evidence, the command `create-evidence` (alias `ce`) is provided:
 
 ```
 reporter create-evidence <location> <output-file>
@@ -103,6 +112,7 @@ A template contains the following information:
 In addition to the information provided by the template, information from the report is added:
 
 * `./report.tex` contains user-provided information that should be added to the report
+* `./reporter.ini` contains user-provided settings for the report, including the title and customer name
 * Issues and evidences. The directory `issues` in a report contains all issues and evidences for the report. These issues are parsed and merged with the jinja context.
 
 === Compilation steps
@@ -144,9 +154,6 @@ from reporter.dynamic_text import Generator
 
 
 class English(Generator):
-    def __init__(self, content):
-        self.content = content
-
     def generate(self):
         self.content['anything'] = "This dynamically created value"
 
