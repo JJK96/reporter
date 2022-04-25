@@ -212,6 +212,9 @@ class Template:
 
 
 class Reporter:
+    # Cache for content
+    _content = None
+
     def __init__(self, template=None, output_dir=config.get('output_dir'), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir')):
         if template:
             self.template = template
@@ -308,6 +311,12 @@ class Reporter:
 
         return content
 
+    @property
+    def content(self):
+        if not self._content:
+            self._content = self.get_content()
+        return self._content
+
     def generate(self):
         """Generate a report"""
 
@@ -316,7 +325,7 @@ class Reporter:
             raise Exception(f"{config.get('report_file')} does not exist, are you in the right directory?")
 
         # Get content
-        content = self.get_content()
+        content = self.content
 
         # Create output dir
         os.makedirs(self.output_dir, exist_ok=True)
