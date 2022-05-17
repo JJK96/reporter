@@ -196,7 +196,6 @@
     \emergencystretch 3em% Avoid going over the end of the line
     \underLine{#1}%
     \par%
-    \fussy%
 }{}
 
 \newcommand{\image}[1]{\includegraphics[width=\textwidth]{images/#1}}
