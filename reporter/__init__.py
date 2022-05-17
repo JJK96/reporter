@@ -66,7 +66,7 @@ def create_issue(
 def create_standard_issue(input_file, output_file=None, do_create_evidence=True):
     if not output_file:
         basename = os.path.basename(input_file)
-        lang, rest = basename.split("_")
+        lang, _, rest = basename.partition("_")
         dirname, _ = os.path.splitext(rest)
         output_file = os.path.join(find_report_root(), config.get('issue_dir'), dirname, config.get('issue_name'))
     dirname = os.path.dirname(output_file)
