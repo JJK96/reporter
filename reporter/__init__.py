@@ -90,7 +90,7 @@ def create_evidence_path(location):
 def create_evidence(location=None, output_file=None, output_dir='.'):
     """Create a new evidence"""
     if not location:
-        location="unknown"
+        location="evidence"
     if not output_file:
         output_file = os.path.join(output_dir, create_evidence_path(location))
     env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
