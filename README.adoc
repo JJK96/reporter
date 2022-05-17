@@ -77,6 +77,38 @@ reporter create-evidence <location> <output-file>
 
 This will create a new evidence with the given location (hostname) and store it in the given output file.
 
+==== Paths
+
+To ensure that paths are formatted correctly, wrap them in the LaTeX command `\path{...}`
+
+==== Images
+
+To add an image, store it in the folder `images` in the report and insert the `\image{...}` command.
+
+Example:
+
+```
+$ ls images
+test_image.png
+```
+
+Then anywhere in the report:
+
+```
+\image{test_image}
+```
+
+==== Pentesting tools
+
+To avoid having to put pentesting tools with footnotes everywhere in the report, there is a framework for managing pentesting tools.
+The description of the tools are added in the `static_content` of the report.
+Through `tools.tex`, the tool definitions are inserted in the report.
+
+If a tools is used in evidence, it can be referred to using `\tool{toolname}`.
+This will insert a reference to the tool description in the place of the tool.
+
+The appendix of the report will contain a list of all the tools used, including their descriptions and URLs.
+
 === Compiling the report
 
 The report can be compiled with the following command:
