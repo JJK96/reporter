@@ -109,7 +109,7 @@ def find_issues_and_evidences(issue_dir=config.get('issue_dir')):
         # Get Issue file
         issue = None
         evidences = []
-        for filename in fnames:
+        for filename in sorted(fnames):
             path = os.path.join(dirpath, filename)
             if filename.startswith("issue") or filename.endswith(".issue"):
                 issue = path
