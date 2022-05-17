@@ -39,3 +39,7 @@ results:
         Each of these findings is provided with additional detail in the following paragraphs, sorted by their classification.
 conclusion:
     title: Conclusion
+tools:
+    - name: Nmap
+      description: A port scanning tool with built-in scripts to perform version detection and all kinds of checks.
+      url: https://nmap.org

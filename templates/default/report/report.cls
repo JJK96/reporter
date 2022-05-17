@@ -31,6 +31,10 @@
 %More space between paragraphs
 \RequirePackage{parskip}
 
+%List and crossreferences of tools
+\RequirePackage{tools/tools}
+\input{tools.tex}
+
 \input{theme.tex}
 
 %Make underscore behave normal

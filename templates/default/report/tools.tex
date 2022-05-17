@@ -1,0 +1,7 @@
+\BLOCK{ for tool in tools }
+    \declaretool
+    \BLOCK{ if tool.url is defined }
+        [\VAR{tool.url}]
+    \BLOCK{ endif }
+    {\VAR{tool.name}}{\VAR{tool.description}}
+\BLOCK{ endfor }

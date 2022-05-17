@@ -1,0 +1,48 @@
+\NeedsTeXFormat{LaTeX2e}[2022/05/12]
+\ProvidesPackage{tools}
+          [2022/05/12 v0.1 tools]
+\RequirePackage{luatextra}
+
+\newcommand{\toolslistheadertext}{Used tools}
+\newcommand{\toolslistheader}{\section{\toolslistheadertext}}
+
+% From: https://tex.stackexchange.com/questions/438876/how-to-cross-reference-text-with-a-custom-label-reference-text
+\newcommand{\toolslabeltext}[3][]{%
+    \@bsphack%
+    \csname phantomsection\endcsname% in case hyperref is used
+    \def\tst{#1}%
+    \def\labelmarkup{\emph}% How to markup the label itself
+    %\def\refmarkup{\labelmarkup}% How to markup the reference
+    \def\refmarkup{}%
+    \ifx\tst\empty\def\@currentlabel{\refmarkup{#2}}{\label{#3}}%
+    \else\def\@currentlabel{\refmarkup{#1}}{\label{#3}}\fi%
+    \@esphack%
+    %\labelmarkup{#2}% visible printed text.
+    \message{Label `#3` defined.}
+}
+
+\directlua{
+    tools = require("tools/tools")    
+}
+
+\newcommand{\declaretool}[3][]{
+    \directlua{
+        tools.declaretool("#2", "#3", "#1")
+    }
+}
+
+\newcommand{\tool}[1]{
+    \ref{#1}
+    \directlua{
+        tools.reftool("#1")
+    }
+}
+
+\newcommand{\toolslist}{
+    \toolslistheader
+    \begin{description}
+    \directlua{
+        tools.toolslist()
+    }
+    \end{description}
+}
