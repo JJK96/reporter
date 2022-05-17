@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 from jinja2 import StrictUndefined
 from deepmerge import always_merger
-from textile_parser import parse_textile_file, render_issue
+from textile_parser import parse_textile_file, render_issue, check_issue
 from pathlib import Path
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
@@ -87,6 +87,7 @@ def load_issue(issue):
         # The file is already a complete issue
         return read_file(issue)
     content = load_issue_evidence(issue)
+    check_issue(content)
     return Issue(
         latex=render_issue(content),
         content=content,
@@ -94,7 +95,11 @@ def load_issue(issue):
 
 
 def load_issue_with_evidences(issue, evidences):
-    issue = load_issue(issue)
+    try:    
+        issue = load_issue(issue)
+    except Exception as e:
+        print(f"Exception while loading issue: {issue}")
+        raise e
     evidences = map(load_evidence, evidences)
     issue.content['evidences'] = list(evidences)
     issue.latex = render_issue(issue.content)
