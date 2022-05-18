@@ -9,7 +9,7 @@
 \RequirePackage{tabulary} % For automatically fitting column widths based on content
 
 %Fix spacing with URL and paths
-\usepackage[obeyspaces]{url}
+\usepackage[obeyspaces,hyphens]{url}
 %Clicakble links
 \RequirePackage{hyperref}
 
