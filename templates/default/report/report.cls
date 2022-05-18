@@ -198,7 +198,7 @@
     \par%
 }{}
 
-\newcommand{\image}[1]{\includegraphics[width=\textwidth]{images/#1}}
+\newcommand{\image}[2][\textwidth]{\includegraphics[width=#1]{images/#2}}
 \newcommand{\signature}[1]{\includegraphics[align=t,width=3cm]{#1}}
 
 % Table with amount of findings per risk level
