@@ -194,7 +194,7 @@
 \newenvironment{evidence}[1]{
     \par%
     \emergencystretch 3em% Avoid going over the end of the line
-    \underLine{#1}%
+    \subparagraph{#1}%
     \par%
 }{}
 
