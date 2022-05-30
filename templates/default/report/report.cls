@@ -4,7 +4,7 @@
 
 %Table styles
 \RequirePackage[table]{xcolor}
-\RequirePackage{tablestyles/tablestyles}
+\RequirePackage{_packages/tablestyles/tablestyles}
 \RequirePackage{tabularx}
 \RequirePackage{tabulary} % For automatically fitting column widths based on content
 
@@ -32,7 +32,7 @@
 \RequirePackage{parskip}
 
 %List and crossreferences of tools
-\RequirePackage{tools/tools}
+\RequirePackage{_packages/tools/tools}
 \input{tools.tex}
 
 \input{theme.tex}
