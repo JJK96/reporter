@@ -32,10 +32,10 @@
 }
 
 \newcommand{\tool}[1]{
-    \ref{#1}
+    \ref{#1}%
     \directlua{
         tools.reftool("#1")
-    }
+    }%
 }
 
 \newcommand{\toolslist}{
