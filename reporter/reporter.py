@@ -322,7 +322,7 @@ class Reporter:
             self._content = self.get_content()
         return self._content
 
-    def generate(self):
+    def generate(self, preprocess_only=False):
         """Generate a report"""
 
         # Check if REPORT_FILE exists
@@ -349,11 +349,12 @@ class Reporter:
         if Path(self.template.STATIC_IMAGES_DIR).exists():
             shutil.copytree(self.template.STATIC_IMAGES_DIR, os.path.join(self.output_dir, STATIC_IMAGES_DIR), dirs_exist_ok=True)
 
-        # Run make to compile the report
-        make = subprocess.run(['make', '-C', self.output_dir])
+        if not preprocess_only:
+            # Run make to compile the report
+            make = subprocess.run(['make', '-C', self.output_dir])
 
-        # Raise exception if make was not succesful
-        make.check_returncode()
+            # Raise exception if make was not succesful
+            make.check_returncode()
 
-        # Copy the report from the output_dir to the current directory
-        copy_output(self.output_file)
+            # Copy the report from the output_dir to the current directory
+            copy_output(self.output_file)

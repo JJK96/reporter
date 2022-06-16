@@ -114,7 +114,7 @@ def main():
         if ENFORCE_VERSION and config.get('reporter_version') != reporter_version:
             raise Exception("This report should be compiled with reporter version {}, while you are using {}. Please install the correct version or change the reporter_version in the configuration file ({})".format(config.get('reporter_version'), reporter_version, REPORT_CONFIG))
         template = Template(args.template, language=args.language)
-        template.reporter.generate()
+        template.reporter.generate(preprocess_only=args.preprocess_only)
 
     def init_caller(args):
         init(
@@ -163,6 +163,7 @@ def main():
     generate_parser = subparsers.add_parser("generate", help="Generate a report")
     generate_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
     generate_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
+    generate_parser.add_argument("--preprocess-only", "-pp", action="store_true", help="Only perform the preprocessing step")
     generate_parser.set_defaults(func=generate_caller)
 
     init_parser = subparsers.add_parser("init", help="Inititate a new report")
