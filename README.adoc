@@ -5,7 +5,11 @@ The findings and issue content are merged and inserted into a LaTeX template. Th
 
 == Setup
 
-Clone the project using `git clone --recurse-submodules`. Then install the project using `pip install -e .`.
+Use python 3.10.
+
+Clone https://github.com/JJK96/textile_parser and install using `pip install -e .`
+
+Clone this project using `git clone --recurse-submodules`. Then install the project using `pip install -e .`.
 
 === Dependencies
 
