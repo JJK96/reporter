@@ -1,8 +1,9 @@
 {
     "recommendations": [
-        "d-koppenhagen.vscode-code-review",
+        "JJKorpershoek.textfile-comments",
         "james-yu.latex-workshop",
         "gehdoc.vscode-textile-preview",
-        "valentjn.vscode-ltex"
+        "valentjn.vscode-ltex",
+        "tomoki1207.pdf"
     ]
 }
