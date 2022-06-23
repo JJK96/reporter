@@ -342,7 +342,7 @@ class Reporter:
         default_template = Template(BASE_TEMPLATE)
         template(content, self.output_dir, [self.template.REPORT_TEMPLATE_DIR, default_template.REPORT_TEMPLATE_DIR], no_overwrite=no_overwrite)
 
-        # Copy some necessary files (makefile)
+        # Copy some necessary files (makefile, latex packages)
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)
 
         # Copy static images
