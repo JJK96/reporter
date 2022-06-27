@@ -70,32 +70,31 @@ def create_standard_issue(input_file, output_file=None, do_create_evidence=True)
         dirname, _ = os.path.splitext(rest)
         output_file = os.path.join(find_report_root(), config.get('issue_dir'), dirname, config.get('issue_name'))
     dirname = os.path.dirname(output_file)
-    os.makedirs(dirname)
+    os.makedirs(dirname, exist_ok=True)
     src = os.path.join(STANDARD_ISSUE_DIR, input_file)
     shutil.copy(src, output_file)
     print(f"Created issue in {output_file}")
     if do_create_evidence:
         create_evidence(location=config.get('default_location'), output_dir=dirname)
+    return dirname
 
 
-def create_evidence_path(location):
+def create_evidence_path(location, output_dir='.'):
     filename = slugify(f"{location}.dradis")
     i = 0
-    while Path(filename).exists():
+    while Path(output_dir, filename).exists():
         i += 1
         filename = slugify(f"{location}{i}.dradis")
     return filename
 
 
-def create_evidence(location=None, output_file=None, output_dir='.'):
+def create_evidence(location="evidence", output_file=None, output_dir='.', description="Describe how you found the evidence"):
     """Create a new evidence"""
-    if not location:
-        location="evidence"
     if not output_file:
-        output_file = os.path.join(output_dir, create_evidence_path(location))
+        output_file = os.path.join(output_dir, create_evidence_path(location, output_dir))
     env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
     template = env.get_template("evidence.dradis")
-    rendered = template.render(location=location)
+    rendered = template.render(location=location, description=description)
     with open(output_file, 'w') as f:
         f.write(rendered)
     print(f"Created evidence in {output_file}")
