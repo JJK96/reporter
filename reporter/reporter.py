@@ -59,12 +59,13 @@ def load_issue_evidence(filename):
             return parse_textile_file(filename)
 
 
-def load_evidence(evidence):
-    content = load_issue_evidence(evidence)
+def load_evidence(filename):
+    """Load evidence from a given evidence file"""
+    content = load_issue_evidence(filename)
     if not content.get('location'):
         content['location'] = config.get('default_location')
         if not content['location']:
-            raise Exception(f"Evidence: {evidence} has no location and no default location is set")
+            raise Exception(f"Evidence: {filename} has no location and no default location is set")
     return content
 
 
@@ -107,6 +108,7 @@ def load_issue_with_evidences(issue, evidences):
 
 
 def find_issues_and_evidences(issue_dir=config.get('issue_dir')):
+    """Yield tuples of an issue path and a list of evidence paths"""
     for dirpath, dnames, fnames in os.walk(issue_dir):
         relpath = os.path.relpath(dirpath, issue_dir)
         if relpath == '.':
@@ -300,6 +302,14 @@ class Reporter:
 
     def add_config(self, content):
         content['config'] = config
+
+    def get_locations(self):
+        locations = set()
+        for _, evidences in find_issues_and_evidences(self.issue_dir):
+            for evidence in evidences:
+                evidence = load_evidence(evidence)
+                locations.add(evidence['location'])
+        return locations
 
     def get_content(self):
         # Load static content used for jinja templating

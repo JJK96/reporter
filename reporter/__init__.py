@@ -108,6 +108,8 @@ def clean():
 
 def main():
     import argparse
+    import argcomplete
+    from .completers import LocationsCompleter
 
     def generate_caller(args):
         if ENFORCE_VERSION and config.get('reporter_version') != reporter_version:
@@ -153,6 +155,12 @@ def main():
         template = Template(args.template, language=args.language)
         template.reporter.finalize()
 
+    def locations_caller(args):
+        template = Template(args.template, language=args.language)
+        locations = template.reporter.get_locations()
+        for location in locations:
+            print(location)
+
     def run_command(command):
         os.system(os.path.join(BIN_DIR, command))
 
@@ -160,8 +168,7 @@ def main():
     subparsers = parser.add_subparsers(help='Subcommands')
 
     generate_parser = subparsers.add_parser("generate", help="Generate a report")
-    generate_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
-    generate_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
+    generate_parser.add_argument("--format", "-f", help="Output format", choices=["pdf", "csv"], default="pdf")
     generate_parser.add_argument("--preprocess-only", "-pp", action="store_true", help="Only perform the preprocessing step")
     generate_parser.set_defaults(func=generate_caller)
 
@@ -173,8 +180,6 @@ def main():
     init_parser.add_argument("--testtime", help="Time for the test in hours", default=40, type=int)
     init_parser.add_argument("--startdate", help="Start date of the test", default=date.today().strftime("%d-%m-%Y"))
     init_parser.add_argument("--enddate", help="End date of the test", default=date.today().strftime("%d-%m-%Y"))
-    init_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
-    init_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     init_parser.set_defaults(func=init_caller)
 
     create_issue_parser = subparsers.add_parser("create-issue", aliases=['ci'], help="Create a new issue",)
@@ -186,7 +191,8 @@ def main():
     create_issue_parser.set_defaults(func=create_issue_caller)
 
     create_evidence_parser = subparsers.add_parser("create-evidence", aliases=['ce'], help="Create a new evidence")
-    create_evidence_parser.add_argument("-l", "--location", help="Where you found the issue", required=config.get('default_location') is None, default=config.get('default_location'))
+    create_evidence_parser.add_argument("-l", "--location", help="Where you found the issue", required=config.get('default_location') is None, default=config.get('default_location'))\
+        .completer = LocationsCompleter
     create_evidence_parser.add_argument("-o", "--output_file", default=None)
     create_evidence_parser.set_defaults(func=create_evidence_caller)
 
@@ -197,10 +203,17 @@ def main():
     create_standard_issue_parser.set_defaults(func=lambda _: run_command("create_standard_issue"))
 
     finalize_parser = subparsers.add_parser("finalize", help="Copy the output report to a final version with a default name")
-    finalize_parser.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
-    finalize_parser.add_argument("--language", "-l", help="Language", default=config.get('language'))
     finalize_parser.set_defaults(func=finalize_caller)
 
+    locations_parser = subparsers.add_parser("locations", help="Get all locations used in the report")
+    locations_parser.set_defaults(func=locations_caller)
+
+    for p in [generate_parser, init_parser, locations_parser, finalize_parser]:
+        p.add_argument("--template", "-t", help="Template to use", default=config.get('template'))
+        p.add_argument("--language", "-l", help="Language", default=config.get('language'))
+
+
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     if hasattr(args, 'func'):
         args.func(args)
