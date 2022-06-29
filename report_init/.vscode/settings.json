@@ -3,6 +3,7 @@
     "latex-workshop.latex.external.build.args": [
         "generate"
     ],
+    "latex-workshop.latex.autoBuild.run": "onSave",
     "code-review.categories": [
         "Style guide",
         "Resolved"
