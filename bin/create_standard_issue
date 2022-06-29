@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 pushd "${BASH_SOURCE%/*}/../standard-issue-library" || exit
-filename=$(find . -type f -name "*.issue" | fzf)
+filename=$(reporter standard-issues | fzf)
 popd
 reporter create-issue -s "$filename"

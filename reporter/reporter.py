@@ -3,8 +3,11 @@ from jinja2 import StrictUndefined
 from deepmerge import always_merger
 from textile_parser import parse_textile_file, render_issue, check_issue
 from pathlib import Path
+from os.path import join
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
+
+from reporter.util import find_report_root
 from .cvss import score_to_severity
 from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
@@ -43,9 +46,9 @@ def read_file(filename):
         return f.read()
 
 
-def copy_output(output_file):
+def copy_output(output_file, root):
     try:
-        shutil.copy(output_file, "./")
+        shutil.copy(output_file, root)
     except shutil.SameFileError:
         pass
 
@@ -227,10 +230,11 @@ class Reporter:
             self.template = template
         else:
             self.template = Template(BASE_TEMPLATE)
-        self.output_dir = output_dir
+        self.root = find_report_root()
+        self.output_dir = join(self.root, output_dir)
         self.report_filename = report_filename
-        self.issue_dir = issue_dir
-        self.output_file = os.path.join(self.output_dir, self.report_filename)
+        self.issue_dir = join(self.root, issue_dir)
+        self.output_file = join(self.output_dir, self.report_filename)
 
     @property
     def final_report_filename(self):
@@ -367,4 +371,4 @@ class Reporter:
             make.check_returncode()
 
             # Copy the report from the output_dir to the current directory
-            copy_output(self.output_file)
+            copy_output(self.output_file, self.root)

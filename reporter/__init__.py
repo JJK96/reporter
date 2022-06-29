@@ -106,6 +106,14 @@ def clean():
     shutil.rmtree(os.path.join(root, config.get('output_dir')))
 
 
+def get_standard_issues():
+    for folder, subfolders, files in os.walk(STANDARD_ISSUE_DIR):
+        for file in files:
+            _, extension = os.path.splitext(file)
+            filePath = os.path.relpath(os.path.join(folder, file), STANDARD_ISSUE_DIR)
+            if extension == ".issue":
+                yield filePath
+
 def main():
     import argparse
     import argcomplete
@@ -135,7 +143,7 @@ def main():
 
     def create_issue_caller(args):
         if args.standard_issue:
-            create_standard_issue(args.standard_issue, args.output_file)
+            create_standard_issue(args.standard_issue, args.output_file, do_create_evidence=not args.no_evidence)
             return
         if not args.output_file:
             if not args.title:
@@ -160,6 +168,13 @@ def main():
         locations = template.reporter.get_locations()
         for location in locations:
             print(location)
+
+    def find_root_caller(args):
+        print(find_report_root())
+
+    def standard_issues_caller(args):
+        for issue in get_standard_issues():
+            print(issue)
 
     def run_command(command):
         os.system(os.path.join(BIN_DIR, command))
@@ -188,6 +203,7 @@ def main():
     create_issue_parser.add_argument("--title", help="Title of the issue")
     create_issue_parser.add_argument("--cvss-vector", help="CVSS vector", default=config.get('cvss_vector'))
     create_issue_parser.add_argument("--cvss-score", help="CVSS score", default=config.get('cvss_score'))
+    create_issue_parser.add_argument("-n", "--no-evidence", action="store_true", help="Do not create evidence")
     create_issue_parser.set_defaults(func=create_issue_caller)
 
     create_evidence_parser = subparsers.add_parser("create-evidence", aliases=['ce'], help="Create a new evidence")
@@ -207,6 +223,12 @@ def main():
 
     locations_parser = subparsers.add_parser("locations", help="Get all locations used in the report")
     locations_parser.set_defaults(func=locations_caller)
+
+    standard_issues_parser = subparsers.add_parser("standard-issues", help="List all standard issues")
+    standard_issues_parser.set_defaults(func=standard_issues_caller)
+
+    find_root_parser = subparsers.add_parser("find-root", help="Find the root of this report")
+    find_root_parser.set_defaults(func=find_root_caller)
 
     for p in [generate_parser, init_parser, locations_parser, finalize_parser]:
         p.add_argument("--template", "-t", help="Template to use", default=config.get('template'))

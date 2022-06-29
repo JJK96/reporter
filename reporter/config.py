@@ -81,6 +81,8 @@ DEFAULTS = {
     "issue_dir": 'issues',
     "template": DEFAULT_TEMPLATE,
     "reporter_version": reporter_version,
+    "show_locations": True,
+    "default_location": "evidence"
 }
 
 parser = configparser.ConfigParser()
