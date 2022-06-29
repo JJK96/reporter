@@ -2,9 +2,23 @@ module(...,package.seeall)
 
 local tools = {}
 
+function pairsByKeys (t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0      -- iterator variable
+    local iter = function ()   -- iterator function
+      i = i + 1
+      if a[i] == nil then return nil
+      else return a[i], t[a[i]]
+      end
+    end
+    return iter
+end
+
 function toolslist()
     local output = ""
-    for name, tool in pairs(tools) do
+    for name, tool in pairsByKeys(tools) do
         if tool.references > 0 then
             item = "\\item[" .. name .. "] " .. tool.description 
             if tool.link then
