@@ -203,11 +203,11 @@ class Template:
         self.DYNAMIC_TEXT_LIB = os.path.join(self.dir, DYNAMIC_TEXT_LIB)
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
-        try:
-            self.reporter = self.reporter_class(self, **kwargs)
-        except ReportRootNotFound:
-            # Not currently in a report, so just don't initialize the reporter
-            self.reporter = None
+        self.reporter_args = kwargs
+
+    @property
+    def reporter(self):
+        return self.reporter_class(self, **self.reporter_args)
 
     @property
     def reporter_class(self):
@@ -229,13 +229,16 @@ class Reporter:
     # Cache for content
     _content = None
 
-    def __init__(self, template=None, output_dir=config.get('output_dir'), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir')):
+    def __init__(self, template=None, output_dir=config.get('output_dir'), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir'), report_dir=None):
         if template:
             self.template = template
         else:
             self.template = Template(BASE_TEMPLATE)
         self.report_filename = report_filename
-        self.root = find_report_root()
+        if report_dir:
+            self.root = report_dir
+        else:
+            self.root = find_report_root()
         self.output_dir = join(self.root, output_dir)
         self.issue_dir = join(self.root, issue_dir)
         self.output_file = join(self.output_dir, self.report_filename)
