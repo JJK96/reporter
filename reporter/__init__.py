@@ -13,7 +13,7 @@ from deepmerge import always_merger
 
 def init(template_name=config.get('template'), language=config.get('language'), output_dir='.', type="pentest", 
          title="Title of the project", company="Company B.V.", testtime=40,
-         startdate=None, enddate=None):
+         startdate=None, enddate=None, additional_content=None, include_sample_issue=True):
     """Initiate a new report"""
     shutil.copytree(REPORT_INIT_DIR, output_dir)
     # Move git directory to .git
@@ -36,6 +36,8 @@ def init(template_name=config.get('template'), language=config.get('language'), 
     }, static)
     template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
+    if include_sample_issue:
+        create_issue(os.path.join(output_dir, config.get('issue_dir'), "example_issue", config.get('issue_filename')))
 
 
 def create_issue(
@@ -43,6 +45,9 @@ def create_issue(
         title="Issue title",
         cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
         cvss_score="0.0",
+        description="",
+        solution="",
+        references="",
         do_create_evidence=True,
         ):
     """Create a new issue"""
@@ -50,6 +55,9 @@ def create_issue(
         "title": title,
         "cvss_vector": cvss_vector,
         "cvss_score": cvss_score,
+        "description": description,
+        "solution": solution,
+        "references": references,
     }
     env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
     template = env.get_template("issue.dradis")

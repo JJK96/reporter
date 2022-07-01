@@ -2,6 +2,10 @@
 {{title}}
 
 #[Label]#
+{{label}}
+
+#[Description]#
+{{description}}
 
 #[CVSSv3.BaseScore]#
 {{cvss_score}}
@@ -12,8 +16,8 @@
 #[Type]#
 Internal | External
 
-#[Description]#
-
 #[Solution]#
+{{solution}}
 
 #[References]#
+{{references}}
