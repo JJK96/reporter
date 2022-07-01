@@ -7,7 +7,7 @@ from os.path import join
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 
-from reporter.util import find_report_root
+from reporter.util import find_report_root, ReportRootNotFound
 from .cvss import score_to_severity
 from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
@@ -203,7 +203,11 @@ class Template:
         self.DYNAMIC_TEXT_LIB = os.path.join(self.dir, DYNAMIC_TEXT_LIB)
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
-        self.reporter = self.reporter_class(self, **kwargs)
+        try:
+            self.reporter = self.reporter_class(self, **kwargs)
+        except ReportRootNotFound:
+            # Not currently in a report, so just don't initialize the reporter
+            self.reporter = None
 
     @property
     def reporter_class(self):
@@ -230,9 +234,9 @@ class Reporter:
             self.template = template
         else:
             self.template = Template(BASE_TEMPLATE)
+        self.report_filename = report_filename
         self.root = find_report_root()
         self.output_dir = join(self.root, output_dir)
-        self.report_filename = report_filename
         self.issue_dir = join(self.root, issue_dir)
         self.output_file = join(self.output_dir, self.report_filename)
 
