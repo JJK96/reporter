@@ -1,1 +1,6 @@
 tools: []
+report_content:
+  assignment: Description of the assignment
+  management_conclusion: The conclusion as written to the management.
+  management_results: Results as presented to management
+  conclusion: Conclusion of the report

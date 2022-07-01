@@ -34,6 +34,8 @@ def init(template_name=config.get('template'), language=config.get('language'), 
         "template": template_name,
         "reporter_version": reporter_version,
     }, static)
+    if additional_content:
+        content = always_merger.merge(content, additional_content)
     template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
     if include_sample_issue:
