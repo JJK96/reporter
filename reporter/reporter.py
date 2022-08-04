@@ -74,11 +74,26 @@ def load_evidence(filename):
 
 @dataclass
 class Issue:
-    latex: str
     content: dict
 
     def __getattr__(self, name):
-        return self.content[name]
+        try:
+            return self.content[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        if name == "content":
+            super().__setattr__(name, value)
+        else:
+            self.content[name] = value
+
+    # def __hasattr__(self, name):
+    #     return 'name' in self.content
+
+    @property
+    def latex(self):
+        return render_issue(self.content)
 
     @property
     def severity(self):
@@ -92,10 +107,7 @@ def load_issue(issue):
         return read_file(issue)
     content = load_issue_evidence(issue)
     check_issue(content)
-    return Issue(
-        latex=render_issue(content),
-        content=content,
-    )
+    return Issue(content)
 
 
 def load_issue_with_evidences(issue, evidences):
@@ -106,7 +118,6 @@ def load_issue_with_evidences(issue, evidences):
         raise e
     evidences = map(load_evidence, evidences)
     issue.content['evidences'] = list(evidences)
-    issue.latex = render_issue(issue.content)
     return issue
 
 
@@ -145,13 +156,17 @@ def create_issue_dict(issues):
     for issue in issues:
         issue_dict[issue.severity].append(issue)
     ordered = OrderedDict()
-    i = 0
+    taken = set()
+    i = 1
     for k in severities:
         v = sorted(issue_dict[k], key=lambda x: x.cvss_score, reverse=True)
         # Number the issues
         for issue in v:
-            i += 1
-            issue.number = i
+            while i in taken:
+                i += 1
+            if not hasattr(issue, 'number'):
+                issue.number = i
+            taken.add(issue.number)
         ordered[k] = v
     return ordered
 

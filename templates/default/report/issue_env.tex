@@ -1,12 +1,14 @@
 %Issue environment
-\newenvironment{issue}[2][]{
+\newenvironment{issue}[3][]{
     \stepcounter{issue}
     \newcommand{\@issuetitle}{#2}
+    \newcommand{\@issuenumber}{#3}
     \def\labeltmp{#1}
     \ifx\labeltmp\@empty%
     \else%
-        \mylabeltext{\VAR{text.finding} \theissue}{\labeltmp}
+        \mylabeltext{\VAR{text.finding} \@issuenumber{}}{\labeltmp}
     \fi
+    \mylabeltext{\VAR{text.finding} \@issuenumber{}}{finding-\@issuenumber}
     \subsubsection{\@issuetitle}
 }{
     ~\par
@@ -14,7 +16,7 @@
     \disablealternatecolors
     \begin{tabularx}{\textwidth}{|>{\bfseries}l|X|}
         \theadstart
-        \multicolumn{2}{|l|}{\textbf{\VAR{text.finding} \theissue:}~\@issuetitle} \\
+        \multicolumn{2}{|l|}{\textbf{\VAR{text.finding} \@issuenumber{}:}~\@issuetitle} \\
         \tbody
         \issueheader
         \hline
