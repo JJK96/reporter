@@ -1,39 +1,22 @@
-from jinja2 import Environment, FileSystemLoader
-from jinja2 import StrictUndefined
-from deepmerge import always_merger
 from textile_parser import parse_textile_file, render_issue, check_issue
 from pathlib import Path
 from os.path import join
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 
-from reporter.util import cascade_directories, find_report_root, ReportRootNotFound
+from .util import find_report_root, template
 from .cvss import score_to_severity
-from .config import (ISSUE_TEMPLATES_DIR, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
-                     STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
-                     BIN_DIR, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
+from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
+                     NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR,
+                     DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
 import yaml
 import subprocess
 import os
 import shutil
-import re
-
-
-def get_latex_env(template_dir):
-    return Environment(
-        loader=FileSystemLoader(template_dir),
-        block_start_string=r'\BLOCK{',
-        block_end_string='}',
-        variable_start_string=r'\VAR{',
-        variable_end_string='}',
-        comment_start_string=r'\#{',
-        comment_end_string='}',
-        line_statement_prefix='%%',
-        line_comment_prefix='%#',
-        trim_blocks=True,
-        autoescape=False,
-        undefined=StrictUndefined)
+from deepmerge import always_merger
+from .commandline import Commandline
+from .report_manager import ReportManager
 
 
 def load_content(filename):
@@ -150,7 +133,6 @@ def load_issues(**kwargs):
         yield load_issue(issue)
 
 
-
 def create_issue_dict(issues):
     issue_dict = defaultdict(list)
     for issue in issues:
@@ -171,34 +153,6 @@ def create_issue_dict(issues):
     return ordered
 
 
-def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".tex", ".cls"]):
-    """ For each unique path in template_dirs read it, perform jinja templating and write to output dir
-
-        :param template_dirs: List of template_directories, files in later directories are fallbacks in case the filename does not exist in earlier template_dirs.
-            (So, earlier directories override later directories)
-    """
-    for f in cascade_directories(template_dirs):
-        output_dir_path = os.path.join(output_dir, f.relpath)
-        _, ext = os.path.splitext(f.fname)
-        if ext not in extensions:
-            continue
-        path = os.path.join(f.relpath, f.fname)
-        output_path = os.path.normpath(os.path.join(output_dir, path))
-        if output_path in no_overwrite:
-            continue
-        output_path = Path(output_path)
-        if output_path.is_symlink() and not output_path.exists():
-            # Remove broken symlinks
-            os.remove(output_path)
-        if f.relpath != '.':
-            os.makedirs(output_dir_path, exist_ok=True)
-        env = get_latex_env(f.dir)
-        template = env.get_template(path)
-        rendered = template.render(content)
-        with open(output_path, 'w') as f:
-            f.write(rendered)
-
-
 class Template:
     def __init__(self, name=BASE_TEMPLATE, language=config.get('language'), **kwargs):
         self.name = name
@@ -211,6 +165,8 @@ class Template:
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
         self.reporter_args = kwargs
+        self.commandline = Commandline(self)
+        self.report_manager = ReportManager(self)
 
     @property
     def reporter(self):

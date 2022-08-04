@@ -3,6 +3,8 @@ import os
 import re
 from importlib.metadata import version
 from dataclasses import dataclass
+from jinja2 import Environment, FileSystemLoader
+from jinja2 import StrictUndefined
 
 reporter_version = version('reporter')
 
@@ -60,3 +62,47 @@ def cascade_directories(directories):
 def slugify(filename):
     disallowed = r'[\\/:*?"<>|]'
     return re.sub(disallowed, "_", filename)
+
+
+def get_latex_env(template_dir):
+    return Environment(
+        loader=FileSystemLoader(template_dir),
+        block_start_string=r'\BLOCK{',
+        block_end_string='}',
+        variable_start_string=r'\VAR{',
+        variable_end_string='}',
+        comment_start_string=r'\#{',
+        comment_end_string='}',
+        line_statement_prefix='%%',
+        line_comment_prefix='%#',
+        trim_blocks=True,
+        autoescape=False,
+        undefined=StrictUndefined)
+
+
+def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".tex", ".cls"]):
+    """ For each unique path in template_dirs read it, perform jinja templating and write to output dir
+
+        :param template_dirs: List of template_directories, files in later directories are fallbacks in case the filename does not exist in earlier template_dirs.
+            (So, earlier directories override later directories)
+    """
+    for f in cascade_directories(template_dirs):
+        output_dir_path = os.path.join(output_dir, f.relpath)
+        _, ext = os.path.splitext(f.fname)
+        if ext not in extensions:
+            continue
+        path = os.path.join(f.relpath, f.fname)
+        output_path = os.path.normpath(os.path.join(output_dir, path))
+        if output_path in no_overwrite:
+            continue
+        output_path = Path(output_path)
+        if output_path.is_symlink() and not output_path.exists():
+            # Remove broken symlinks
+            os.remove(output_path)
+        if f.relpath != '.':
+            os.makedirs(output_dir_path, exist_ok=True)
+        env = get_latex_env(f.dir)
+        template = env.get_template(path)
+        rendered = template.render(content)
+        with open(output_path, 'w') as f:
+            f.write(rendered)

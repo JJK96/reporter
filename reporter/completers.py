@@ -1,7 +1,7 @@
-from .reporter import Template
 from .config import config
 
-def LocationsCompleter(**kwargs):
+def LocationsCompleter(template, **kwargs):
+    from .reporter import Template
     template = Template(config.get('template'), language=config.get('lanaguage'))
     locations = template.reporter.get_locations()
     return list(locations)
