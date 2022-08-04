@@ -2,7 +2,7 @@ import argparse
 from weakref import finalize
 import argcomplete
 from .completers import LocationsCompleter
-from .config import config, ENFORCE_VERSION, BIN_DIR
+from .config import REPORT_CONFIG, config, ENFORCE_VERSION, BIN_DIR
 from .util import reporter_version, find_report_root, slugify
 from datetime import date
 import logging
