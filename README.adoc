@@ -170,6 +170,26 @@ When symlinking files from the report directory to `.cache`, the symlinked filen
 
 For Textile parsing of Dradis content https://github.com/JJK96/textile_parser[Textile-Parser] is used. This library parses a Dradis file and returns a dictionary containing all fields. The markup in the fields, like bullets, footnotes, etc. is converted to LaTeX and is inserted directly in the resulting Dradis Issue.
 
+==== Non-standard issue fields:
+
+    #[Number]#
+    4
+
+Normally, issues are numbered from 1 to n starting with the highest-severity vulnerability as 1.
+It is possible to override this automatic number for specific issues by setting the `number` field in the issue.
+
+    #[Label]#
+    mylabel
+
+To refer to an issue somewhere else in the text, the `label` field can be used to set a label.
+It can then be used to reference the issue somewhere in the text using `\ref{mylabel}`.
+
+    #[Location]#
+    server1, server2
+
+Normally the location where an issue is found is determined as the combination of the locations of all evidences.
+This can be overriden by setting the `location` field in the issue.
+
 === Report initiation
 
 When running `reporter init`, the `report_init` directory is used to create a new report. A template is loaded and files in the directory are templated using jinja, based on the static content in the template.
