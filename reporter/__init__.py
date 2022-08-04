@@ -15,7 +15,8 @@ def init(template_name=config.get('template'), language=config.get('language'), 
          title="Title of the project", company="Company B.V.", testtime=40,
          startdate=None, enddate=None, additional_content=None, include_sample_issue=True):
     """Initiate a new report"""
-    shutil.copytree(REPORT_INIT_DIR, output_dir)
+    base_dir = os.path.join(REPORT_INIT_DIR, "base")
+    shutil.copytree(base_dir, output_dir)
     # Move git directory to .git
     git_path = Path(os.path.join(output_dir, 'git'))
     if git_path.exists():
@@ -36,7 +37,12 @@ def init(template_name=config.get('template'), language=config.get('language'), 
     }, static)
     if additional_content:
         content = always_merger.merge(content, additional_content)
-    template(content, output_dir, [REPORT_INIT_DIR], extensions=[".tex", ".dradis", ".issue", ".ini"])
+    types_dir = os.path.join(REPORT_INIT_DIR, "types")    
+    if type in os.listdir(types_dir):
+        type_dir = os.path.join(types_dir, type)
+    else:
+        type_dir = os.path.join(types_dir, "default")
+    template(content, output_dir, [base_dir, type_dir], extensions=[".tex", ".dradis", ".issue", ".ini"])
     print(f"Created a new report in {output_dir}")
     if include_sample_issue:
         create_issue(os.path.join(output_dir, config.get('issue_dir'), "example_issue", config.get('issue_filename')))
