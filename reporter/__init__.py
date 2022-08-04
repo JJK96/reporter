@@ -9,6 +9,7 @@ import shutil
 from pathlib import Path
 from datetime import date
 from deepmerge import always_merger
+import logging
 
 
 def init(template_name=config.get('template'), language=config.get('language'), output_dir='.', type="pentest", 
@@ -136,8 +137,13 @@ def main():
     from .completers import LocationsCompleter
 
     def generate_caller(args):
-        if ENFORCE_VERSION and config.get('reporter_version') != reporter_version:
-            raise Exception("This report should be compiled with reporter version {}, while you are using {}. Please install the correct version or change the reporter_version in the configuration file ({})".format(config.get('reporter_version'), reporter_version, REPORT_CONFIG))
+        if config.get('reporter_version') != reporter_version:
+            message = "This report should be compiled with reporter version {}, while you are using {}. Please install the correct version or change the reporter_version in the configuration file ({})".format(config.get('reporter_version'), reporter_version, REPORT_CONFIG)
+            if ENFORCE_VERSION:
+                raise Exception(message)
+            else:
+                logging.warning(message)
+
         template = Template(args.template, language=args.language)
         template.reporter.generate(preprocess_only=args.preprocess_only)
 
