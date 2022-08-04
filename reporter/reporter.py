@@ -6,7 +6,7 @@ from collections import defaultdict, OrderedDict
 
 from .util import find_report_root, template
 from .cvss import score_to_severity
-from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
+from .config import (COMMANDLINE_LIB, REPORT_MANAGER_LIB, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR,
                      DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
@@ -164,9 +164,9 @@ class Template:
         self.DYNAMIC_TEXT_LIB = os.path.join(self.dir, DYNAMIC_TEXT_LIB)
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
         self.REPORTER_LIB = os.path.normpath(os.path.join(self.dir, REPORTER_LIB))
+        self.COMMANDLINE_LIB = os.path.normpath(os.path.join(self.dir, COMMANDLINE_LIB))
+        self.REPORT_MANAGER_LIB = os.path.normpath(os.path.join(self.dir, REPORT_MANAGER_LIB))
         self.reporter_args = kwargs
-        self.commandline = Commandline(self)
-        self.report_manager = ReportManager(self)
 
     @property
     def reporter(self):
@@ -181,6 +181,34 @@ class Template:
             return mod.Reporter
         else:
             return Reporter
+
+    @property
+    def commandline(self):
+        return self.commandline_class(self)
+
+    @property
+    def commandline_class(self):
+        if Path(self.COMMANDLINE_LIB).exists():
+            spec = importlib.util.spec_from_file_location("template_commandline", self.COMMANDLINE_LIB)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            return mod.Commandline
+        else:
+            return Commandline
+
+    @property
+    def report_manager(self):
+        return self.report_manager_class(self)
+
+    @property
+    def report_manager_class(self):
+        if Path(self.REPORT_MANAGER_LIB).exists():
+            spec = importlib.util.spec_from_file_location("template_report_manager", self.REPORT_MANAGER_LIB)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            return mod.ReportManager
+        else:
+            return ReportManager
 
     def load_static_content(self):
         lang = load_content(os.path.join(self.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
