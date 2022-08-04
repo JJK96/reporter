@@ -27,7 +27,7 @@
 
 \newcommand{\declaretool}[3][]{
     \directlua{
-        tools.declaretool("#2", "#3", "#1")
+        tools.declaretool("#2", [[#3]], "#1")
     }
 }
 
