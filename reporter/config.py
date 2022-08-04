@@ -60,6 +60,10 @@ CONFIG_LIB = "config.py"
 
 REPORTER_LIB = "reporter.py"
 
+COMMANDLINE_LIB = "commandline.py"
+
+REPORT_MANAGER_LIB = "report_manager.py"
+
 ########
 # Overridable settings
 # These settings can be overridden in a report-specific config file
