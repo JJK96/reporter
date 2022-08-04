@@ -47,9 +47,9 @@ class Commandline:
             args.output_file = os.path.join(find_report_root(), config.get('issue_dir'), slugify(args.title), config.get('issue_filename'))
         self.template.report_manager.create_issue(
             args.output_file,
-            args.title,
-            args.cvss_vector,
-            args.cvss_score,
+            title=args.title,
+            cvss_vector=args.cvss_vector,
+            cvss_score=args.cvss_score,
         )
 
     def create_evidence_caller(self, args):
