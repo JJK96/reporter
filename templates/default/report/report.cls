@@ -31,11 +31,11 @@
 %More space between paragraphs
 \RequirePackage{parskip}
 
+\input{theme.tex}
+
 %List and crossreferences of tools
 \RequirePackage{_packages/tools/tools}
 \input{tools.tex}
-
-\input{theme.tex}
 
 %Make underscore behave normal
 \catcode`\_11
