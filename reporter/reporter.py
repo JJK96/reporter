@@ -7,9 +7,9 @@ from os.path import join
 from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 
-from reporter.util import find_report_root, ReportRootNotFound
+from reporter.util import cascade_directories, find_report_root, ReportRootNotFound
 from .cvss import score_to_severity
-from .config import (severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
+from .config import (ISSUE_TEMPLATES_DIR, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      STANDARD_ISSUE_DIR, NECESSARY_FILES_DIR, REPORT_INIT_DIR, REPORT_TEMPLATE_DIR,
                      BIN_DIR, DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
@@ -177,34 +177,26 @@ def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".
         :param template_dirs: List of template_directories, files in later directories are fallbacks in case the filename does not exist in earlier template_dirs.
             (So, earlier directories override later directories)
     """
-    done = set()
-    for template_dir in template_dirs:
-        env = get_latex_env(template_dir)
-        for dirpath, dnames, fnames in os.walk(template_dir):
-            relpath = os.path.relpath(dirpath, template_dir)
-            output_dir_path = os.path.join(output_dir, relpath)
-            for f in fnames:
-                _, ext = os.path.splitext(f)
-                if ext not in extensions:
-                    continue
-                path = os.path.join(relpath, f)
-                if path in done:
-                    # Don't template files that have already been done
-                    continue
-                output_path = os.path.normpath(os.path.join(output_dir, path))
-                if output_path in no_overwrite:
-                    continue
-                output_path = Path(output_path)
-                if output_path.is_symlink() and not output_path.exists():
-                    # Remove broken symlinks
-                    os.remove(output_path)
-                if relpath != '.':
-                    os.makedirs(output_dir_path, exist_ok=True)
-                template = env.get_template(path)
-                rendered = template.render(content)
-                with open(output_path, 'w') as f:
-                    f.write(rendered)
-                done.add(path)
+    for f in cascade_directories(template_dirs):
+        output_dir_path = os.path.join(output_dir, f.relpath)
+        _, ext = os.path.splitext(f.fname)
+        if ext not in extensions:
+            continue
+        path = os.path.join(f.relpath, f.fname)
+        output_path = os.path.normpath(os.path.join(output_dir, path))
+        if output_path in no_overwrite:
+            continue
+        output_path = Path(output_path)
+        if output_path.is_symlink() and not output_path.exists():
+            # Remove broken symlinks
+            os.remove(output_path)
+        if f.relpath != '.':
+            os.makedirs(output_dir_path, exist_ok=True)
+        env = get_latex_env(f.dir)
+        template = env.get_template(path)
+        rendered = template.render(content)
+        with open(output_path, 'w') as f:
+            f.write(rendered)
 
 
 class Template:
