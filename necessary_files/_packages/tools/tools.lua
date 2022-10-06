@@ -21,7 +21,7 @@ function toolslist()
     for name, tool in pairsByKeys(tools) do
         if tool.references > 0 then
             item = "\\item[" .. name .. "] " .. tool.description 
-            if tool.link then
+            if tool.link and not (tool.link == '') then
                 item = item .. "\\footnote{\\url{" .. tool.link .. "}}"
             end
             output = output .. item .. "\\toolslabeltext{" .. name .. "}{" .. name .. "}"
