@@ -1,5 +1,4 @@
 import argparse
-from weakref import finalize
 import argcomplete
 from .completers import LocationsCompleter
 from .config import REPORT_CONFIG, config, ENFORCE_VERSION, BIN_DIR
@@ -158,13 +157,21 @@ class Commandline:
         if args.language != self.template.language:
             self.template.language = args.language
         if hasattr(args, 'func'):
-            args.func(args)
+            try:
+                args.func(args)
+            except Exception as e:
+                if args.debug:
+                    raise e
+                else:
+                    print(e)
+                    return
         else:
             self.parser.print_usage()
 
     def __init__(self, template):
         self.template = template
         self.parser = argparse.ArgumentParser()
+        self.parser.add_argument("--debug", action="store_true", help="Debug mode")
         self.subparsers = self.parser.add_subparsers(help='Subcommands')
         self.add_subparsers()
         argcomplete.autocomplete(self.parser)
