@@ -6,14 +6,29 @@ import os
 from deepmerge import always_merger
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
+from functools import reduce
 
 class ReportManager:
+    report_defaults = {
+        "title": "Title of the project", 
+        "company": "Company B.V.", 
+        "testtime": 40,
+    }
+
+    issue_defaults = {
+         "title": "Issue title",
+         "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+         "cvss_score": "0.0",
+         "description": "",
+         "solution": "",
+         "references": "",    
+     }
+            
     def __init__(self, template):
         self.template = template
 
-    def init(self, output_dir='.', type="pentest", 
-             title="Title of the project", company="Company B.V.", testtime=40,
-             startdate=None, enddate=None, additional_content=None, include_sample_issue=True):
+    def init(self, output_dir='.', type="pentest", additional_content=None, 
+             include_sample_issue=True, **report_content):
         """Initiate a new report"""
         base_dir = os.path.join(REPORT_INIT_DIR, "base")
         shutil.copytree(base_dir, output_dir)
@@ -23,17 +38,12 @@ class ReportManager:
             os.rename(git_path, os.path.join(output_dir, '.git'))
 
         static = self.template.load_static_content()
-        content = always_merger.merge({
+        content = reduce(always_merger.merge, [{
             "report_type": type,
-            "title": title,
-            "company": company,
-            "testtime": testtime,
-            "startdate": startdate,
-            "enddate": enddate,
             "language": self.template.language,
             "template": self.template.name,
             "reporter_version": reporter_version,
-        }, static)
+        }, self.report_defaults, report_content], static)
         if additional_content:
             content = always_merger.merge(content, additional_content)
         types_dir = os.path.join(REPORT_INIT_DIR, "types")    
@@ -48,23 +58,10 @@ class ReportManager:
 
     def create_issue(self, 
             output_file,
-            title="Issue title",
-            cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-            cvss_score="0.0",
-            description="",
-            solution="",
-            references="",
             do_create_evidence=True,
-            ):
+            **issue_fields):
         """Create a new issue"""
-        content = {
-            "title": title,
-            "cvss_vector": cvss_vector,
-            "cvss_score": cvss_score,
-            "description": description,
-            "solution": solution,
-            "references": references,
-        }
+        content = always_merger.merge(self.issue_defaults, issue_fields)
         env = Environment(loader=FileSystemLoader(ISSUE_TEMPLATES_DIR))
         template = env.get_template("issue.dradis")
         rendered = template.render(content)
