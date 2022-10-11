@@ -1,4 +1,4 @@
-from textile_parser import parse_textile_file, render_issue, check_issue
+from textile_parser import parse_textile_file, check_issue
 from pathlib import Path
 from os.path import join
 from dataclasses import dataclass
@@ -73,10 +73,6 @@ class Issue:
 
     # def __hasattr__(self, name):
     #     return 'name' in self.content
-
-    @property
-    def latex(self):
-        return render_issue(self.content)
 
     @property
     def severity(self):

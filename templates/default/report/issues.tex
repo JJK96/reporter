@@ -4,7 +4,35 @@
     \BLOCK{ endif }
 
     \BLOCK{ for issue in issues }
-    \VAR{issue.latex}
+        \begin{issue}\BLOCK{ if issue.label }[\VAR{issue.label}]\BLOCK{ endif }{ \VAR{issue.title} }{\VAR{issue.number}}
+            \cvss{\VAR{issue.cvss_score}}
+            \descriptionfield{
+                \VAR{issue.description}
+            }
+            \solution{
+                \VAR{issue.solution}
+            }
+            \cvssvector{\VAR{issue.cvss_vector}}
+            \location{%
+                \raggedright\arraybackslash%
+                \BLOCK{ if issue.location is defined }
+                    \VAR{issue.location}
+                \BLOCK{ else }
+                    \BLOCK{ for location in issue.evidences|map(attribute='location')|unique }
+                    \VAR{location}\BLOCK{ if not loop.last },\BLOCK{ endif }
+                    \BLOCK{ endfor }
+                \BLOCK{ endif }
+            }
+            \VAR{issue.description}
+
+            \BLOCK{ for evidence in issue.evidences }
+                \BLOCK{ if evidence.output }
+                    \begin{evidence}{\VAR{evidence.location}}
+                        \VAR{evidence.output}
+                    \end{evidence}
+                \BLOCK{ endif }
+            \BLOCK{ endfor }
+        \end{issue}
     \BLOCK{ endfor }
 \BLOCK{ endfor }
 
