@@ -4,7 +4,7 @@
     \BLOCK{ endif }
 
     \BLOCK{ for issue in issues }
-        \begin{issue}\BLOCK{ if issue.label }[\VAR{issue.label}]\BLOCK{ endif }{ \VAR{issue.title} }{\VAR{issue.number}}
+        \begin{issue}\BLOCK{ if issue.label is defined}[\VAR{issue.label}]\BLOCK{ endif }{ \VAR{issue.title} }{\VAR{issue.number}}
             \cvss{\VAR{issue.cvss_score}}
             \descriptionfield{
                 \VAR{issue.description}
