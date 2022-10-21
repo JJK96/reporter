@@ -153,7 +153,7 @@ class Commandline:
 
     def parse_args(self):
         args = self.parser.parse_args()
-        if args.language != self.template.language:
+        if hasattr(args, 'language') and args.language != self.template.language:
             self.template.language = args.language
         if hasattr(args, 'func'):
             try:
