@@ -64,6 +64,8 @@ COMMANDLINE_LIB = "commandline.py"
 
 REPORT_MANAGER_LIB = "report_manager.py"
 
+PARENTS_FILE = "parents.txt"
+
 ########
 # Overridable settings
 # These settings can be overridden in a report-specific config file

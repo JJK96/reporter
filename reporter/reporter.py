@@ -7,13 +7,14 @@ from collections import defaultdict, OrderedDict
 from .util import find_report_root, template
 from .cvss import score_to_severity
 from .config import (COMMANDLINE_LIB, REPORT_MANAGER_LIB, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
-                     NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR,
+                     NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR, PARENTS_FILE,
                      DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
 import yaml
 import subprocess
 import os
 import shutil
+from functools import reduce
 from deepmerge import always_merger
 from .commandline import Commandline
 from .report_manager import ReportManager
@@ -163,6 +164,16 @@ class Template:
         self.COMMANDLINE_LIB = os.path.normpath(os.path.join(self.dir, COMMANDLINE_LIB))
         self.REPORT_MANAGER_LIB = os.path.normpath(os.path.join(self.dir, REPORT_MANAGER_LIB))
         self.reporter_args = kwargs
+        self.inheritance_tree = self.load_inheritance_tree()
+
+    def load_inheritance_tree(self):
+        path = os.path.join(self.dir, PARENTS_FILE)
+        if Path(path).exists():
+            with open(path, 'r') as f:
+                parent_names = f.read().split()
+            return [self] + [Template(parent) for parent in parent_names]
+        else:
+            return [self]
 
     @property
     def reporter(self):
@@ -170,13 +181,13 @@ class Template:
 
     @property
     def reporter_class(self):
-        if Path(self.REPORTER_LIB).exists():
-            spec = importlib.util.spec_from_file_location("template_reporter", self.REPORTER_LIB)
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            return mod.Reporter
-        else:
-            return Reporter
+        for t in self.inheritance_tree:
+            if Path(t.REPORTER_LIB).exists():
+                spec = importlib.util.spec_from_file_location("template_reporter", t.REPORTER_LIB)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod.Reporter
+        return Reporter
 
     @property
     def commandline(self):
@@ -184,13 +195,13 @@ class Template:
 
     @property
     def commandline_class(self):
-        if Path(self.COMMANDLINE_LIB).exists():
-            spec = importlib.util.spec_from_file_location("template_commandline", self.COMMANDLINE_LIB)
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            return mod.Commandline
-        else:
-            return Commandline
+        for t in self.inheritance_tree:
+            if Path(t.COMMANDLINE_LIB).exists():
+                spec = importlib.util.spec_from_file_location("template_commandline", t.COMMANDLINE_LIB)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod.Commandline
+        return Commandline
 
     @property
     def report_manager(self):
@@ -198,18 +209,22 @@ class Template:
 
     @property
     def report_manager_class(self):
-        if Path(self.REPORT_MANAGER_LIB).exists():
-            spec = importlib.util.spec_from_file_location("template_report_manager", self.REPORT_MANAGER_LIB)
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            return mod.ReportManager
-        else:
-            return ReportManager
+        for t in self.inheritance_tree:
+            if Path(t.REPORT_MANAGER_LIB).exists():
+                spec = importlib.util.spec_from_file_location("template_report_manager", t.REPORT_MANAGER_LIB)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod.ReportManager
+        return ReportManager
 
     def load_static_content(self):
-        lang = load_content(os.path.join(self.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
-        general = load_content(os.path.join(self.STATIC_CONTENT_DIR, "general.yaml"))
-        return always_merger.merge(lang, general)
+        static_content = []
+        for t in self.inheritance_tree:
+            if Path(t.STATIC_CONTENT_DIR).exists():
+                lang = load_content(os.path.join(t.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
+                general = load_content(os.path.join(t.STATIC_CONTENT_DIR, "general.yaml"))
+                static_content.append(always_merger.merge(lang, general))
+        return reduce(lambda x, y: always_merger.merge(y, x), static_content)
 
 
 class Reporter:
@@ -347,15 +362,16 @@ class Reporter:
         no_overwrite = self.symlink_report_files()
 
         # Perform jinja templating using jinja context
-        default_template = Template(BASE_TEMPLATE)
-        template(content, self.output_dir, [self.template.REPORT_TEMPLATE_DIR, default_template.REPORT_TEMPLATE_DIR], no_overwrite=no_overwrite)
+        template(content, self.output_dir, [t.REPORT_TEMPLATE_DIR for t in self.template.inheritance_tree], no_overwrite=no_overwrite)
 
         # Copy some necessary files (makefile, latex packages)
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)
 
         # Copy static images
-        if Path(self.template.STATIC_IMAGES_DIR).exists():
-            shutil.copytree(self.template.STATIC_IMAGES_DIR, os.path.join(self.output_dir, STATIC_IMAGES_DIR), dirs_exist_ok=True)
+        print(self.template.inheritance_tree)
+        for t in self.template.inheritance_tree[::-1]:
+            if Path(t.STATIC_IMAGES_DIR).exists():
+                shutil.copytree(t.STATIC_IMAGES_DIR, os.path.join(self.output_dir, STATIC_IMAGES_DIR), dirs_exist_ok=True)
 
         if not preprocess_only:
             # Run make to compile the report
