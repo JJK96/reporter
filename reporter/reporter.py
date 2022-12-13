@@ -368,7 +368,6 @@ class Reporter:
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)
 
         # Copy static images
-        print(self.template.inheritance_tree)
         for t in self.template.inheritance_tree[::-1]:
             if Path(t.STATIC_IMAGES_DIR).exists():
                 shutil.copytree(t.STATIC_IMAGES_DIR, os.path.join(self.output_dir, STATIC_IMAGES_DIR), dirs_exist_ok=True)
