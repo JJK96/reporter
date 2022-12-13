@@ -192,10 +192,14 @@
 \input{findingtable.tex}
 
 \newenvironment{evidence}[1]{
-    \par%
-    \emergencystretch 3em% Avoid going over the end of the line
-    \subparagraph{#1}%
-    \par%
+    \BLOCK{ if config.show_locations != 'False'}
+        \par%
+        \emergencystretch 3em% Avoid going over the end of the line
+        \subparagraph{#1}%
+        \par%
+    \BLOCK{ else }
+        \par%
+    \BLOCK{ endif }
 }{}
 
 \newcommand{\image}[2][1]{\includegraphics[width=#1\textwidth]{images/#2}}
