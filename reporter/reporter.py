@@ -142,7 +142,7 @@ def create_issue_dict(issues):
     taken = set([issue.number for issue in issues if hasattr(issue, 'number')])
     i = 1
     for k in severities:
-        v = sorted(issue_dict[k], key=lambda x: x.cvss_score, reverse=False)
+        v = sorted(issue_dict[k], key=lambda x: float(x.cvss_score), reverse=True)
         # Number the issues
         for issue in v:
             while i in taken:
