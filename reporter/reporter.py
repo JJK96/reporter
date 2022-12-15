@@ -56,9 +56,13 @@ def load_evidence(filename):
     return content
 
 
-@dataclass
 class Issue:
     content: dict
+
+    def __init__(self, content):
+        if 'number' in content:
+            content['number'] = int(content['number'])
+        self.content = content
 
     def __getattr__(self, name):
         try:
@@ -135,7 +139,7 @@ def create_issue_dict(issues):
     for issue in issues:
         issue_dict[issue.severity].append(issue)
     ordered = OrderedDict()
-    taken = set()
+    taken = set([issue.number for issue in issues if hasattr(issue, 'number')])
     i = 1
     for k in severities:
         v = sorted(issue_dict[k], key=lambda x: x.cvss_score, reverse=False)
@@ -145,7 +149,7 @@ def create_issue_dict(issues):
                 i += 1
             if not hasattr(issue, 'number'):
                 issue.number = i
-            taken.add(issue.number)
+                i += 1
         ordered[k] = v
     return ordered
 
