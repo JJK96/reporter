@@ -4,3 +4,8 @@ report_content:
   management_conclusion: The conclusion as written to the management.
   management_results: Results as presented to management
   conclusion: Conclusion of the report
+acronyms:
+  - acronym: X
+    description: Example
+    link: https://example.com
+    indefinite: an/a

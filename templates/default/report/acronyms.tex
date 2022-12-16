@@ -1,0 +1,16 @@
+% Acronyms
+\usepackage{acronym}
+\BLOCK{ for acronym in acronyms}
+    \newacro{\VAR{acronym.acronym}}{%
+        \VAR{acronym.description}%
+        \BLOCK{if acronym.link is defined}%
+            \footnote{\url{\VAR{acronym.link}}}%
+        \BLOCK{endif}%
+    }%
+    \BLOCK{if acronym.indefinite is defined}%
+        \newacroindefinite{\VAR{acronym.acronym}}%
+        \BLOCK{for a in acronym.indefinite.split('/')}%
+            {\VAR{a}}%
+        \BLOCK{endfor}%
+    \BLOCK{endif}%
+\BLOCK{endfor}
