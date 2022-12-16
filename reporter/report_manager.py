@@ -18,7 +18,6 @@ class ReportManager:
     issue_defaults = {
          "title": "Issue title",
          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-         "cvss_score": "0.0",
          "description": "",
          "solution": "",
          "references": "",    

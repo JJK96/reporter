@@ -76,7 +76,6 @@ DEFAULTS = {
     "issue_title": "Title of the issue",
     "issue_filename": "issue.dradis",
     "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-    "cvss_score": "0.0",   
     # Filename of main latex file for report
     "report_file": 'report.tex',
     "report_output_file": 'report.pdf',
