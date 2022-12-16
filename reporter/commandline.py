@@ -95,7 +95,6 @@ class Commandline:
         create_issue_parser.add_argument("--output_file", help="Output file to store the issue")
         create_issue_parser.add_argument("--title", help="Title of the issue")
         create_issue_parser.add_argument("--cvss-vector", help="CVSS vector", default=config.get('cvss_vector'))
-        create_issue_parser.add_argument("--cvss-score", help="CVSS score", default=config.get('cvss_score'))
         create_issue_parser.add_argument("-n", "--no-evidence", action="store_true", help="Do not create evidence")
         create_issue_parser.set_defaults(func=self.create_issue_caller)
 
