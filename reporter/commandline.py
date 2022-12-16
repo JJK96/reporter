@@ -46,6 +46,7 @@ class Commandline:
             args.output_file,
             title=args.title,
             cvss_vector=args.cvss_vector,
+            do_create_evidence=not args.no_evidence,
         )
 
     def create_standard_issue_caller(self, args):
