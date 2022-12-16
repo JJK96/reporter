@@ -7,9 +7,6 @@
 #[Description]#
 {{description}}
 
-#[CVSSv3.BaseScore]#
-{{cvss_score}}
-
 #[CVSSv3Vector]#
 {{cvss_vector}}
 

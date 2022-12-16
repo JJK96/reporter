@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 
 from .util import find_report_root, template
-from .cvss import score_to_severity
+from .cvss_util import score_to_severity, vector_to_score
 from .config import (COMMANDLINE_LIB, REPORT_MANAGER_LIB, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR, PARENTS_FILE,
                      DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
@@ -16,6 +16,7 @@ import os
 import shutil
 from functools import reduce
 from deepmerge import always_merger
+from cvss import CVSS3
 from .commandline import Commandline
 from .report_manager import ReportManager
 
@@ -78,6 +79,9 @@ class Issue:
 
     # def __hasattr__(self, name):
     #     return 'name' in self.content
+    @property
+    def cvss_score(self):
+        return vector_to_score(self.cvss_vector)
 
     @property
     def severity(self):

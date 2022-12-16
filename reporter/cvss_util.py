@@ -1,3 +1,8 @@
+from cvss import CVSS3
+
+def vector_to_score(vector):
+    return CVSS3(vector).scores()[2]
+
 def score_to_severity(score):
     if not isinstance(score, float):
         score = float(score)
