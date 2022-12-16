@@ -285,8 +285,9 @@ class Reporter:
 
     def symlink_report_files(self):
         paths = []
-        for path in os.listdir():
-            if path.startswith('.') or os.path.realpath(path) == os.path.realpath(self.output_dir):
+        for path in os.listdir(self.root):
+            full_path = os.path.realpath(os.path.join(self.root, path))
+            if path.startswith('.') or full_path == os.path.realpath(self.output_dir):
                 # Don't symlink hidden files or the output dir
                 continue
             output_path = Path(os.path.join(self.output_dir, path))
@@ -294,7 +295,7 @@ class Reporter:
                 # Remove file that is not the correct symlink
                 os.remove(output_path)
             if not output_path.is_symlink():
-                os.symlink(os.path.realpath(path), output_path)
+                os.symlink(full_path, output_path)
             paths.append(output_path.__fspath__())
         return paths
 
@@ -355,10 +356,6 @@ class Reporter:
 
     def generate(self, preprocess_only=False):
         """Generate a report"""
-
-        # Check if REPORT_FILE exists
-        if not Path(config.get('report_file')).exists():
-            raise Exception(f"{config.get('report_file')} does not exist, are you in the right directory?")
 
         # Get content
         content = self.content
