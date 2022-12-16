@@ -3,4 +3,4 @@
 pushd "${BASH_SOURCE%/*}/../standard-issue-library" || exit
 filename=$(reporter standard-issues | fzf)
 popd
-reporter create-issue -s "$filename"
+reporter create-standard-issue --standard-issue "$filename"

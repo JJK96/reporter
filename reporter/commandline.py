@@ -38,9 +38,6 @@ class Commandline:
         self.template.report_manager.clean()
 
     def create_issue_caller(self, args):
-        if args.standard_issue:
-            self.template.report_manager.create_standard_issue(args.standard_issue, args.output_file, do_create_evidence=not args.no_evidence)
-            return
         if not args.output_file:
             if not args.title:
                 raise Exception("Title is required when no output file or standard issue is given")
@@ -49,8 +46,13 @@ class Commandline:
             args.output_file,
             title=args.title,
             cvss_vector=args.cvss_vector,
-            cvss_score=args.cvss_score,
         )
+
+    def create_standard_issue_caller(self, args):
+        if args.standard_issue:
+            self.template.report_manager.create_standard_issue(args.standard_issue, args.output_file, do_create_evidence=not args.no_evidence)
+            return
+        run_command("create_standard_issue")
 
     def create_evidence_caller(self, args):
         self.template.report_manager.create_evidence(args.location, args.output_file)
@@ -91,21 +93,23 @@ class Commandline:
     def add_create_issue_parser(self):
         create_issue_parser = self.subparsers.add_parser("create-issue", aliases=['ci'], help="Create a new issue",)
         self.subparsers_dict['create_issue'] = create_issue_parser
-        create_issue_parser.add_argument("-s", "--standard-issue", help="Create based on the given standard issue")
-        create_issue_parser.add_argument("--output_file", help="Output file to store the issue")
-        create_issue_parser.add_argument("--title", help="Title of the issue")
+        create_issue_parser.add_argument("title", help="Title of the issue")
         create_issue_parser.add_argument("--cvss-vector", help="CVSS vector", default=config.get('cvss_vector'))
-        create_issue_parser.add_argument("-n", "--no-evidence", action="store_true", help="Do not create evidence")
         create_issue_parser.set_defaults(func=self.create_issue_caller)
 
         create_standard_issue_parser = self.subparsers.add_parser("create-standard-issue", aliases=['csi'], help="Search for a standard issue and create it (requires fzf)")
         self.subparsers_dict['create_standard_issue'] = create_standard_issue_parser
-        create_standard_issue_parser.set_defaults(func=lambda _: run_command("create_standard_issue"))
+        create_standard_issue_parser.add_argument("-s", "--standard-issue", help="Create based on the given standard issue")
+        create_standard_issue_parser.set_defaults(func=self.create_standard_issue_caller)
+
+        for parser in [create_issue_parser, create_standard_issue_parser]:
+            parser.add_argument("--output_file", help="Output file to store the issue")
+            parser.add_argument("-n", "--no-evidence", action="store_true", help="Do not create evidence")
 
     def add_create_evidence_parser(self):
         create_evidence_parser = self.subparsers.add_parser("create-evidence", aliases=['ce'], help="Create a new evidence")
         self.subparsers_dict['create_evidence'] = create_evidence_parser
-        create_evidence_parser.add_argument("--location", help="Where you found the issue", required=config.get('default_location') is None, default=config.get('default_location'))\
+        create_evidence_parser.add_argument("location", help="Where you found the issue", nargs='?', default=config.get('default_location'))\
             .completer = LocationsCompleter
         create_evidence_parser.add_argument("-o", "--output_file", default=None)
         create_evidence_parser.set_defaults(func=self.create_evidence_caller)
