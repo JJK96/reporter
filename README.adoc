@@ -113,6 +113,10 @@ This will insert a reference to the tool description in the place of the tool.
 
 The appendix of the report will contain a list of all the tools used, including their descriptions and URLs.
 
+A tool can be manually declared with
+
+    \declaretool[link]{toolname}{description}
+
 === Compiling the report
 
 The report can be compiled with the following command:
