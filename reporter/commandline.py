@@ -65,6 +65,10 @@ class Commandline:
         for location in self.template.reporter.get_locations():
             print(location)
 
+    def images_caller(self, args):
+        for image in self.template.reporter.get_images():
+            print(image)
+
     def find_root_caller(self, args):
         print(find_report_root())
 
@@ -130,6 +134,11 @@ class Commandline:
         self.subparsers_dict['locations'] = locations_parser
         locations_parser.set_defaults(func=self.locations_caller)
 
+    def add_images_parser(self):
+        images_parser = self.subparsers.add_parser("images", help="Get all images available in the report")
+        self.subparsers_dict['images'] = images_parser
+        images_parser.set_defaults(func=self.images_caller)
+
     def add_standard_issues_parser(self):
         standard_issues_parser = self.subparsers.add_parser("standard-issues", help="List all standard issues")
         self.subparsers_dict['standard_issues'] = standard_issues_parser
@@ -153,6 +162,7 @@ class Commandline:
         self.add_generate_parser()
         self.add_init_parser()
         self.add_locations_parser()
+        self.add_images_parser()
         self.add_standard_issues_parser()
 
     def parse_args(self):

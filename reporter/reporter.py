@@ -251,6 +251,7 @@ class Reporter:
             self.root = find_report_root()
         self.output_dir = join(self.root, output_dir)
         self.issue_dir = join(self.root, issue_dir)
+        self.images_dir = join(self.root, 'images')
         self.output_file = join(self.output_dir, self.report_filename)
 
     @property
@@ -332,6 +333,11 @@ class Reporter:
                 evidence = load_evidence(evidence)
                 locations.add(evidence['location'])
         return locations
+
+    def get_images(self):
+        for f in os.listdir(self.images_dir):
+            if f.endswith('.png'):
+                yield f
 
     def get_content(self):
         # Load static content used for jinja templating
