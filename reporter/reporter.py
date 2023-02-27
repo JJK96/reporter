@@ -255,7 +255,7 @@ class Reporter:
                     except AttributeError:
                         continue
                 if show_diff:
-                    p = subprocess.run(['git', 'diff', '--color=always', standard_issue.path, issue.path], capture_output= True)
+                    p = subprocess.run(['diff', '-u', '--color=always', standard_issue.path, issue.path], capture_output= True)
                     diff = p.stdout
                 if differences:
                     yield issue, differences, diff

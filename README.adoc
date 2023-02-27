@@ -17,6 +17,8 @@ Install basictex to have the necessary tools to compile LaTeX: `brew install --c
 
 In order to use the provided functionality for creating standard issues, the program https://github.com/junegunn/fzf[fzf] should be installed.
 
+To use diffing of standard issues and report issues, `diff` is required.
+
 To use the provided tooling for editing, installing Visual Studio Code is recommended, but not required.
 
 ==== Mac OS
