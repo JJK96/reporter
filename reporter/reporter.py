@@ -18,6 +18,8 @@ from .issues import load_content, load_issues_with_evidences, find_issues_and_ev
 
 
 def merge_dicts(dict_list):
+    if not dict_list:
+        return {}
     return reduce(lambda x, y: always_merger.merge(y, x), dict_list)
 
 
