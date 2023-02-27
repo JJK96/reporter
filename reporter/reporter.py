@@ -3,7 +3,6 @@ from os.path import join
 from collections import defaultdict, OrderedDict
 
 from .util import find_report_root, template
-from .cvss_util import score_to_severity, vector_to_score
 from .config import (COMMANDLINE_LIB, REPORT_MANAGER_LIB, severities, TEMPLATES_DIR, STATIC_CONTENT_DIR, STATIC_IMAGES_DIR,
                      NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR, PARENTS_FILE,
                      DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
@@ -47,8 +46,8 @@ class Template:
         self.name = name
         self.language = language
         self.dir = os.path.join(TEMPLATES_DIR, name)
-        self.STATIC_CONTENT_DIR = os.path.join(self.dir, STATIC_CONTENT_DIR)
         self.REPORT_TEMPLATE_DIR = os.path.join(self.dir, REPORT_TEMPLATE_DIR)
+        self.STATIC_CONTENT_DIR = os.path.join(self.dir, STATIC_CONTENT_DIR)
         self.STATIC_IMAGES_DIR = os.path.join(self.dir, STATIC_IMAGES_DIR)
         self.DYNAMIC_TEXT_LIB = os.path.join(self.dir, DYNAMIC_TEXT_LIB)
         self.CONFIG_LIB = os.path.normpath(os.path.join(self.dir, CONFIG_LIB))
@@ -171,6 +170,10 @@ class Reporter:
     def symlink_report_files(self):
         paths = []
         for path in os.listdir(self.root):
+            _, ext = os.path.splitext(path)
+            if ext in [".tex", ".yaml"]:
+                # Do not symlink tex or yaml files, they are templated later
+                continue
             full_path = os.path.realpath(os.path.join(self.root, path))
             if path.startswith('.') or full_path == os.path.realpath(self.output_dir):
                 # Don't symlink hidden files or the output dir
@@ -234,9 +237,21 @@ class Reporter:
             if issue.title not in titles:
                 yield issue
 
+    def load_local_static_content(self):
+        new_content = []
+        for path in os.listdir(self.root):
+            if not path.endswith('.yaml'):
+                continue
+            abs_path = os.path.join(self.root, path)
+            file_content = load_content(abs_path)
+            new_content.append(file_content)
+        return merge_dicts(new_content)
+
     def get_content(self):
         # Load static content used for jinja templating
         content = self.template.load_static_content()
+        local_content = self.load_local_static_content()
+        content = always_merger.merge(content, local_content)
 
         # Load issues from issue_dir and add to the jinja content
         self.add_issues_and_stats(content)
@@ -268,7 +283,8 @@ class Reporter:
         no_overwrite = self.symlink_report_files()
 
         # Perform jinja templating using jinja context
-        template(content, self.output_dir, [t.REPORT_TEMPLATE_DIR for t in self.template.inheritance_tree], no_overwrite=no_overwrite)
+        template_dirs = [self.root] + [t.REPORT_TEMPLATE_DIR for t in self.template.inheritance_tree]
+        template(content, self.output_dir, template_dirs, no_overwrite=no_overwrite)
 
         # Copy some necessary files (makefile, latex packages)
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)
