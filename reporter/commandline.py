@@ -76,6 +76,10 @@ class Commandline:
         for issue in self.template.report_manager.get_standard_issues():
             print(issue)
 
+    def diff_standard_issues_caller(self, args):
+        for issue in self.template.reporter.diff_standard_issues():
+            print(issue.title)
+
     def add_generate_parser(self):
         generate_parser = self.subparsers.add_parser("generate", help="Generate a report")
         self.subparsers_dict['generate'] = generate_parser
@@ -149,6 +153,11 @@ class Commandline:
         self.subparsers_dict['find_root'] = find_root_parser
         find_root_parser.set_defaults(func=self.find_root_caller)
 
+    def add_diff_standard_issues_parser(self):
+        diff_standard_issues_parser = self.subparsers.add_parser("diff-standard-issues", help="List all issues that are not in the standard issues library.")
+        self.subparsers_dict['diff_standard_issues'] = diff_standard_issues_parser
+        diff_standard_issues_parser.set_defaults(func=self.diff_standard_issues_caller)
+
     def add_common_args(self):
         for p in self.subparsers_dict.values():
             p.add_argument("--language", "-l", help="Language", default=config.get('language'))
@@ -164,6 +173,7 @@ class Commandline:
         self.add_locations_parser()
         self.add_images_parser()
         self.add_standard_issues_parser()
+        self.add_diff_standard_issues_parser()
 
     def parse_args(self):
         args = self.parser.parse_args()

@@ -1,5 +1,6 @@
 from .config import ISSUE_TEMPLATES_DIR, STANDARD_ISSUE_DIR, config, REPORT_INIT_DIR
 from .util import find_report_root, reporter_version, slugify, template
+from .issues import load_issue
 
 import shutil
 import os
@@ -116,10 +117,15 @@ class ReportManager:
         shutil.rmtree(os.path.join(root, config.get('output_dir')))
 
 
-    def get_standard_issues(self):
+    def get_standard_issues(self, contents=False):
         for folder, subfolders, files in os.walk(STANDARD_ISSUE_DIR):
             for file in files:
                 _, extension = os.path.splitext(file)
-                filePath = os.path.relpath(os.path.join(folder, file), STANDARD_ISSUE_DIR)
+                absPath = os.path.join(folder, file)
+                filePath = os.path.relpath(absPath, STANDARD_ISSUE_DIR)
                 if extension == ".issue":
-                    yield filePath
+                    if contents:
+                        yield load_issue(absPath)
+                    else:
+                        yield filePath
+

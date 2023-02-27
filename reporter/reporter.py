@@ -1,7 +1,5 @@
-from textile_parser import parse_textile_file, check_issue
 from pathlib import Path
 from os.path import join
-from dataclasses import dataclass
 from collections import defaultdict, OrderedDict
 
 from .util import find_report_root, template
@@ -10,132 +8,18 @@ from .config import (COMMANDLINE_LIB, REPORT_MANAGER_LIB, severities, TEMPLATES_
                      NECESSARY_FILES_DIR, REPORT_TEMPLATE_DIR, PARENTS_FILE,
                      DYNAMIC_TEXT_LIB, BASE_TEMPLATE, CONFIG_LIB, REPORTER_LIB, config)
 import importlib
-import yaml
 import subprocess
 import os
 import shutil
 from functools import reduce
 from deepmerge import always_merger
-from cvss import CVSS3
 from .commandline import Commandline
 from .report_manager import ReportManager
+from .issues import load_content, load_issues_with_evidences, find_issues_and_evidences, load_evidence, copy_output
 
 
-def load_content(filename):
-    with open(filename) as f:
-        return yaml.safe_load(f)
-
-
-def read_file(filename):
-    with open(filename) as f:
-        return f.read()
-
-
-def copy_output(output_file, root):
-    try:
-        shutil.copy(output_file, root)
-    except shutil.SameFileError:
-        pass
-
-
-def load_issue_evidence(filename):
-    _, extension = os.path.splitext(filename)
-    match extension:
-        case (".yaml"|".yml"):
-            return load_content(filename)
-        case _:
-            return parse_textile_file(filename)
-
-
-def load_evidence(filename):
-    """Load evidence from a given evidence file"""
-    content = load_issue_evidence(filename)
-    if not content.get('location'):
-        content['location'] = config.get('default_location')
-        if not content['location']:
-            raise Exception(f"Evidence: {filename} has no location and no default location is set")
-    return content
-
-
-class Issue:
-    content: dict
-
-    def __init__(self, content):
-        if 'number' in content:
-            content['number'] = int(content['number'])
-        self.content = content
-
-    def __getattr__(self, name):
-        try:
-            return self.content[name]
-        except KeyError:
-            raise AttributeError(name)
-
-    def __setattr__(self, name, value):
-        if name == "content":
-            super().__setattr__(name, value)
-        else:
-            self.content[name] = value
-
-    # def __hasattr__(self, name):
-    #     return 'name' in self.content
-    @property
-    def cvss_score(self):
-        return vector_to_score(self.cvss_vector)
-
-    @property
-    def severity(self):
-        return score_to_severity(self.cvss_score)
-
-
-def load_issue(issue):
-    _, extension = os.path.splitext(issue)
-    if extension == "tex":
-        # The file is already a complete issue
-        return read_file(issue)
-    content = load_issue_evidence(issue)
-    check_issue(content)
-    return Issue(content)
-
-
-def load_issue_with_evidences(issue, evidences):
-    try:    
-        issue = load_issue(issue)
-    except Exception as e:
-        print(f"Exception while loading issue: {issue}")
-        raise e
-    evidences = map(load_evidence, evidences)
-    issue.content['evidences'] = list(evidences)
-    return issue
-
-
-def find_issues_and_evidences(issue_dir=config.get('issue_dir')):
-    """Yield tuples of an issue path and a list of evidence paths"""
-    for dirpath, dnames, fnames in os.walk(issue_dir):
-        relpath = os.path.relpath(dirpath, issue_dir)
-        if relpath == '.':
-            continue
-        # Get Issue file
-        issue = None
-        evidences = []
-        for filename in sorted(fnames):
-            path = os.path.join(dirpath, filename)
-            if filename.startswith("issue") or filename.endswith(".issue"):
-                issue = path
-            else:
-                evidences.append(path)
-        if issue:
-            yield issue, evidences
-
-
-def load_issues_with_evidences(issue_dir=config.get('issue_dir')):
-    for issue, evidences in find_issues_and_evidences(issue_dir):
-        yield load_issue_with_evidences(issue, evidences)
-
-
-def load_issues(**kwargs):
-    for issue, _ in find_issues_and_evidences(**kwargs):
-        yield load_issue(issue)
+def merge_dicts(dict_list):
+    return reduce(lambda x, y: always_merger.merge(y, x), dict_list)
 
 
 def create_issue_dict(issues):
@@ -232,7 +116,7 @@ class Template:
                 lang = load_content(os.path.join(t.STATIC_CONTENT_DIR, f"{self.language}.yaml"))
                 general = load_content(os.path.join(t.STATIC_CONTENT_DIR, "general.yaml"))
                 static_content.append(always_merger.merge(lang, general))
-        return reduce(lambda x, y: always_merger.merge(y, x), static_content)
+        return merge_dicts(static_content)
 
 
 class Reporter:
@@ -316,8 +200,11 @@ class Reporter:
         """ Override to process issues based on content """
         pass
 
+    def get_issues(self):
+        yield from load_issues_with_evidences(self.issue_dir)
+
     def add_issues_and_stats(self, content):
-        issues = list(load_issues_with_evidences(self.issue_dir))
+        issues = list(self.get_issues())
         self.process_issues(content, issues)
         content['issues'] = create_issue_dict(issues)
         content['num_issues'] = len(issues)
@@ -338,6 +225,14 @@ class Reporter:
         for f in os.listdir(self.images_dir):
             if f.endswith('.png'):
                 yield f
+
+    def diff_standard_issues(self):
+        titles = set()
+        for standard_issue in self.template.report_manager.get_standard_issues(contents=True):
+            titles.add(standard_issue.title)
+        for issue in self.get_issues():
+            if issue.title not in titles:
+                yield issue
 
     def get_content(self):
         # Load static content used for jinja templating
