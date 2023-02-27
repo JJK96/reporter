@@ -125,7 +125,7 @@ The report can be compiled with the following command:
 reporter generate
 ```
 
-This creates the directory `.cache` with all the files necessary for compilation, compiles the report and copies the resulting PDF report to the current directory.
+This creates the directory `.cache/output` with all the files necessary for compilation, compiles the report and copies the resulting PDF report to the current directory.
 
 === Tooling
 
@@ -160,15 +160,31 @@ In addition to the information provided by the template, information from the re
 The steps for compiling the report are as follows:
 
 1. Create the `.cache` directory in which the report is built.
-2. Symlink all files in the report directory to the `.cache` directory.
-3. Template all the LaTeX files from the template and store them in the `.cache` directory.
-4. Copy the necessary supportive files. These files are stored in `necessary_files` and contain a Makefile used to build the project and some other necessary files.
-5. Run Make in the `.cache` directory to build the report
-6. Copy the report PDF file to the report directory.
+2. Symlink all files in the report directory to the `.cache/output` directory.
+3. Copy all LaTeX templates and store them in the `.cache/templates` directory.
+4. Template all LaTeX templates in `.cache/templates` and store the output in `.cache/output`.
+5. Copy the necessary supportive files. These files are stored in `necessary_files` and contain a Makefile used to build the project and some other necessary files.
+6. Run Make in the `.cache/output` directory to build the report
+7. Copy the report PDF file to the report directory.
 
-=== Overriding LaTeX files
+=== Overriding LaTeX templates
 
-When symlinking files from the report directory to `.cache`, the symlinked filenames are remembered and will not be overwritten in later steps. This means that it is possible to override any of the generated files by copying it to the report directory and editing it. Keep in mind that this bypasses the templating, so any dynamic content will not be updated.
+When copying the template files to `.cache/templates`, the LaTeX templates are loaded first from parent themes/templates, then from the template itself, and finally from the report directory. 
+his means that it is possible to override any of the LaTeX templates by copying it from `.cache/templates` to the report directory and editing it.
+These files may contain Jinja tags (`\BLOCK{...}` and `\VAR{...}`).
+
+Extra content can be loaded from `.yaml` files in the report directory.
+e.g.
+
+`content.yaml`
+```
+some_variable: test
+```
+
+`conclusion.tex`
+```
+\VAR{some_variable}
+```
 
 === Dradis/Textile parsing
 
@@ -205,7 +221,7 @@ The latex template is stored in the `templates/default/report/` folder. The hear
 ==== Custom templates
 
 It is possible to extend or override the existing template by creating a new template in the `templates` folder. Any file in `templates/new_template/report` will override a file with the same name in `templates/default/report`.
-The directory `static_images` can be created in a report. These images are copied to the `.cache` folder in any new reports.
+The directory `static_images` can be created in a report. These images are copied to the `.cache/output` folder in any new reports.
 
 In addition, it is possible to add a file for generating dynamic content. To do this, create a file named `dynamic_text.py` in the directory of the new template. This file should contain a content like the following:
 
