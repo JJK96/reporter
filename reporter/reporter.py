@@ -1,5 +1,6 @@
 from pathlib import Path
 from os.path import join
+import subprocess
 from collections import defaultdict, OrderedDict
 
 from .util import find_report_root, template
@@ -232,13 +233,33 @@ class Reporter:
             if f.endswith('.png'):
                 yield f
 
-    def diff_standard_issues(self):
-        titles = set()
+    def diff_standard_issues(self, show_diff=False):
+        standard_issues = {}
         for standard_issue in self.template.report_manager.get_standard_issues(contents=True):
-            titles.add(standard_issue.title)
+            standard_issues[standard_issue.title] = standard_issue
         for issue in self.get_issues():
-            if issue.title not in titles:
-                yield issue
+            diff = None
+            standard_issue = standard_issues.get(issue.title)
+            if not standard_issue:
+                # The issue is not a standard issue
+                yield issue, "new", diff
+            else:
+                # Check for differences with the standard issue
+                differences = []
+                for k,v in issue.items():
+                    if k == 'label':
+                        continue
+                    try:
+                        if v != getattr(standard_issue, k):
+                            differences.append(k)
+                    except AttributeError:
+                        continue
+                if show_diff:
+                    p = subprocess.run(['git', 'diff', '--color=always', standard_issue.path, issue.path], capture_output= True)
+                    diff = p.stdout
+                if differences:
+                    yield issue, differences, diff
+                
 
     def load_local_static_content(self):
         new_content = []

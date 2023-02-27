@@ -44,10 +44,11 @@ def load_evidence(filename):
 class Issue:
     content: dict
 
-    def __init__(self, content):
+    def __init__(self, content, path=None):
         if 'number' in content:
             content['number'] = int(content['number'])
         self.content = content
+        self.path = path
 
     def __getattr__(self, name):
         try:
@@ -60,6 +61,11 @@ class Issue:
             super().__setattr__(name, value)
         else:
             self.content[name] = value
+
+    def items(self):
+        for k, v in self.content.items():
+            if k not in ['evidences', 'path']:
+                yield k,v
 
     # def __hasattr__(self, name):
     #     return 'name' in self.content
@@ -79,7 +85,7 @@ def load_issue(issue):
         return read_file(issue)
     content = load_issue_evidence(issue)
     check_issue(content)
-    return Issue(content)
+    return Issue(content, path=issue)
 
 
 def load_issue_with_evidences(issue, evidences):
