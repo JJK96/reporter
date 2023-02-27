@@ -122,7 +122,7 @@ class Reporter:
     # Cache for content
     _content = None
 
-    def __init__(self, template=None, output_dir=config.get('output_dir'), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir'), report_dir=None):
+    def __init__(self, template=None, output_dir=join(config.get('cache_dir'), config.get('output_dir')), report_filename=config.get('report_output_file'), issue_dir=config.get('issue_dir'), report_dir=None):
         if template:
             self.template = template
         else:
@@ -133,6 +133,7 @@ class Reporter:
         else:
             self.root = find_report_root()
         self.output_dir = join(self.root, output_dir)
+        self.templates_output_dir = join(self.root, config.get('cache_dir'), config.get('templates_output_dir'))
         self.issue_dir = join(self.root, issue_dir)
         self.images_dir = join(self.root, 'images')
         self.output_file = join(self.output_dir, self.report_filename)
@@ -284,7 +285,7 @@ class Reporter:
 
         # Perform jinja templating using jinja context
         template_dirs = [self.root] + [t.REPORT_TEMPLATE_DIR for t in self.template.inheritance_tree]
-        template(content, self.output_dir, template_dirs, no_overwrite=no_overwrite)
+        template(content, self.templates_output_dir, self.output_dir, template_dirs, no_overwrite=no_overwrite, excluded_dirs=[config.get('cache_dir'), '.git'])
 
         # Copy some necessary files (makefile, latex packages)
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)

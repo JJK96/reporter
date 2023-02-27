@@ -114,7 +114,7 @@ class ReportManager:
     def clean(self):
         """Clean current report of build files"""
         root = find_report_root()
-        shutil.rmtree(os.path.join(root, config.get('output_dir')))
+        shutil.rmtree(os.path.join(root, config.get('cache_dir')))
 
 
     def get_standard_issues(self, contents=False):

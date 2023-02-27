@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import re
+import shutil
 from importlib.metadata import version
 from dataclasses import dataclass
 from jinja2 import Environment, FileSystemLoader
@@ -38,16 +39,24 @@ class CascadedFile:
     # Filename
     fname: str
 
-def cascade_directories(directories):
+def cascade_directories(directories, excluded=[]):
     """
     Return files from a list of directories, where files in later directories are fallbacks if a file is not found in an earlier directory
     
     :return: generator(CascadedFile)
     """
     processed = set()
+    def should_exclude(relpath):
+        for e in excluded:
+            if relpath.startswith(e):
+                return True
+        return False
+
     for dir in directories:
         for dirpath, dnames, fnames in os.walk(dir):
             relpath = os.path.relpath(dirpath, dir)
+            if should_exclude(relpath):
+                continue
             for f in fnames:
                 key = (relpath, f)
                 if key in processed:
@@ -80,29 +89,40 @@ def get_latex_env(template_dir):
         undefined=StrictUndefined)
 
 
-def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".tex", ".cls"]):
-    """ For each unique path in template_dirs read it, perform jinja templating and write to output dir
-
-        :param template_dirs: List of template_directories, files in later directories are fallbacks in case the filename does not exist in earlier template_dirs.
-            (So, earlier directories override later directories)
-    """
-    for f in cascade_directories(template_dirs):
+def copy_template_files(output_dir, template_dirs, extensions=[".tex", ".cls"], excluded_dirs=[]):
+    os.makedirs(output_dir, exist_ok=True)
+    for f in cascade_directories(template_dirs, excluded_dirs):
         output_dir_path = os.path.join(output_dir, f.relpath)
         _, ext = os.path.splitext(f.fname)
         if ext not in extensions:
             continue
         path = os.path.join(f.relpath, f.fname)
-        output_path = os.path.normpath(os.path.join(output_dir, path))
-        if output_path in no_overwrite:
-            continue
-        output_path = Path(output_path)
-        if output_path.is_symlink() and not output_path.exists():
-            # Remove broken symlinks
-            os.remove(output_path)
+        src_path = os.path.normpath(os.path.join(f.dir, path))
+        dst_path = os.path.normpath(os.path.join(output_dir, path))
+        dst_path = Path(dst_path)
         if f.relpath != '.':
             os.makedirs(output_dir_path, exist_ok=True)
-        env = get_latex_env(f.dir)
-        template = env.get_template(path)
-        rendered = template.render(content)
-        with open(output_path, 'w') as f:
-            f.write(rendered)
+        shutil.copy(src_path, dst_path)
+
+
+def template(content, templates_output_dir, output_dir, template_dirs, no_overwrite=[], extensions=[".tex", ".cls"], excluded_dirs=[]):
+    """ For each unique path in template_dirs read it, perform jinja templating and write to output dir
+
+        :param template_dirs: List of template_directories, files in later directories are fallbacks in case the filename does not exist in earlier template_dirs.
+            (So, earlier directories override later directories)
+    """
+    copy_template_files(templates_output_dir, template_dirs, extensions=extensions, excluded_dirs=excluded_dirs)
+    env = get_latex_env(templates_output_dir)
+    for dirpath, dnames, fnames in os.walk(templates_output_dir):
+        relpath = os.path.relpath(dirpath, templates_output_dir)
+        for f in fnames:
+            path = os.path.join(relpath, f)
+            output_path = os.path.join(output_dir, path)
+            if output_path in no_overwrite:
+                continue
+            template = env.get_template(path)
+            rendered = template.render(content)
+            if relpath != '.':
+                os.makedirs(dirpath, exist_ok=True)
+            with open(output_path, 'w') as f:
+                f.write(rendered)

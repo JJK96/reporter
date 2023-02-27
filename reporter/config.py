@@ -82,7 +82,10 @@ DEFAULTS = {
     "language": DEFAULT_LANGUAGE,
     # Standard name of issue
     "issue_name": "issue.dradis",
-    "output_dir": '.cache',
+    "cache_dir": '.cache',
+    # Output dir is relative to cache dir
+    "output_dir": 'output',
+    "templates_output_dir": 'templates',
     "issue_dir": 'issues',
     "template": DEFAULT_TEMPLATE,
     "reporter_version": reporter_version,
