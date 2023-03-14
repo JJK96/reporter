@@ -308,7 +308,7 @@ class Reporter:
 
         # Perform jinja templating using jinja context
         template_dirs = [self.root] + [t.REPORT_TEMPLATE_DIR for t in self.template.inheritance_tree]
-        template(content, self.templates_output_dir, self.output_dir, template_dirs, no_overwrite=no_overwrite, excluded_dirs=[config.get('cache_dir'), '.git'])
+        template(content, self.output_dir, template_dirs, no_overwrite=no_overwrite, excluded_dirs=[config.get('cache_dir'), '.git'], templates_output_dir=self.templates_output_dir)
 
         # Copy some necessary files (makefile, latex packages)
         self.copy_files(NECESSARY_FILES_DIR, no_overwrite=no_overwrite)
