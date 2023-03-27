@@ -13,6 +13,10 @@
 %Clicakble links
 \RequirePackage{hyperref}
 
+% Remove EXIF data
+\pdfvariable suppressoptionalinfo 767
+\hypersetup{pdfinfo={ Creator={}, Producer={} }}
+
 % Graphbox for vertically centering image in table, provides align option to \includegraphics
 \RequirePackage{graphbox} %loads graphicx package
 
