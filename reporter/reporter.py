@@ -152,6 +152,12 @@ class Reporter:
             cur_version = int(version[2:])
             return "_v{}".format(cur_version + 1)
 
+    def write_issue_numbers(self):
+        issue_dict = create_issue_dict(list(self.get_issues()))
+        for _, issues in issue_dict.items():
+            for issue in issues:
+                issue.write_back(['number'])
+
     def finalize(self):
         src = self.output_file
         dst, ext = self.final_report_filename
@@ -159,6 +165,7 @@ class Reporter:
         while Path(dst + version + ext).exists():
             version = self.inc_version(version)
         shutil.copy(src, dst + version + ext)
+        self.write_issue_numbers()
 
     def copy_files(self, dir, no_overwrite=[]):
         for path in os.listdir(dir):

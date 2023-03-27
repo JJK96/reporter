@@ -88,6 +88,9 @@ class Commandline:
                     import textwrap
                     print(textwrap.indent(diff.decode(), prefix='    '))
 
+    def write_number_caller(self, args):
+        self.template.reporter.write_issue_numbers()
+
     def add_generate_parser(self):
         generate_parser = self.subparsers.add_parser("generate", help="Generate a report")
         self.subparsers_dict['generate'] = generate_parser
@@ -167,6 +170,11 @@ class Commandline:
         diff_standard_issues_parser.add_argument("-d", "--show_diff", action="store_true", help="Show full git diff")
         diff_standard_issues_parser.set_defaults(func=self.diff_standard_issues_caller)
 
+    def add_write_number_parser(self):
+        write_number_parser = self.subparsers.add_parser("write-numbers", help="Write issue numbers back to the issue files")
+        self.subparsers_dict['write_number'] = write_number_parser
+        write_number_parser.set_defaults(func=self.write_number_caller)
+
     def add_common_args(self):
         for p in self.subparsers_dict.values():
             p.add_argument("--language", "-l", help="Language", default=config.get('language'))
@@ -183,6 +191,7 @@ class Commandline:
         self.add_images_parser()
         self.add_standard_issues_parser()
         self.add_diff_standard_issues_parser()
+        self.add_write_number_parser()
 
     def parse_args(self):
         args = self.parser.parse_args()

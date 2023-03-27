@@ -1,4 +1,4 @@
-from textile_parser import parse_textile_file, check_issue
+from textile_parser import parse_textile_file, check_issue, generate_textile
 from .cvss_util import score_to_severity, vector_to_score
 from .config import config
 import yaml
@@ -44,11 +44,12 @@ def load_evidence(filename):
 class Issue:
     content: dict
 
-    def __init__(self, content, path=None):
+    def __init__(self, content, raw_content=None, path=None):
         if 'number' in content:
             content['number'] = int(content['number'])
         self.content = content
         self.path = path
+        self.raw_content = raw_content
 
     def __getattr__(self, name):
         try:
@@ -77,6 +78,14 @@ class Issue:
     def severity(self):
         return score_to_severity(self.cvss_score)
 
+    def write_back(self, extra_fields=[]):
+        content = self.raw_content.copy()
+        for field in extra_fields:
+            content[field] = getattr(self, field)
+        output = generate_textile(content)
+        with open(self.path, 'w') as f:
+            f.write(output)
+
 
 def load_issue(issue):
     _, extension = os.path.splitext(issue)
@@ -84,8 +93,9 @@ def load_issue(issue):
         # The file is already a complete issue
         return read_file(issue)
     content = load_issue_evidence(issue)
+    raw_content = parse_textile_file(issue, raw=True)
     check_issue(content)
-    return Issue(content, path=issue)
+    return Issue(content, raw_content=raw_content, path=issue)
 
 
 def load_issue_with_evidences(issue, evidences):
