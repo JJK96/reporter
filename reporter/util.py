@@ -113,8 +113,9 @@ def template(content, output_dir, template_dirs, no_overwrite=[], extensions=[".
         if f.relpath != '.':
             os.makedirs(output_dir_path, exist_ok=True)
         if templates_output_dir:
-            src_path= os.path.normpath(os.path.join(f.dir, path))
+            src_path = os.path.normpath(os.path.join(f.dir, path))
             dst_path = os.path.normpath(os.path.join(templates_output_dir, path))
+            os.makedirs(os.path.join(templates_output_dir, f.relpath), exist_ok=True)
             shutil.copy(src_path, dst_path)
         env = get_latex_env(f.dir)
         template = env.get_template(path)
