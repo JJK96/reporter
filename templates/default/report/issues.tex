@@ -4,6 +4,8 @@
     \BLOCK{ endif }
 
     \BLOCK{ for issue in issues }
+        \typeout{Processing "\VAR{issue.title}"}
+        \typeout{\VAR{issue.path}}
         \begin{issue}\BLOCK{ if issue.label is defined}[\VAR{issue.label}]\BLOCK{ endif }{ \VAR{issue.title} }{\VAR{issue.number}}
             \cvss{\VAR{issue.cvss_score}}
             \descriptionfield{
@@ -26,6 +28,7 @@
             \VAR{issue.description}
 
             \BLOCK{ for evidence in issue.evidences }
+                \typeout{\VAR{evidence.path}}
                 \BLOCK{ if evidence.output }
                     \begin{evidence}{\VAR{evidence.location}}
                         \VAR{evidence.output}

@@ -38,6 +38,7 @@ def load_evidence(filename):
         content['location'] = config.get('default_location')
         if not content['location']:
             raise Exception(f"Evidence: {filename} has no location and no default location is set")
+    content['path'] = filename
     return content
 
 

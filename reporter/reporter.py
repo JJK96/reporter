@@ -326,8 +326,11 @@ class Reporter:
                 shutil.copytree(t.STATIC_IMAGES_DIR, os.path.join(self.output_dir, STATIC_IMAGES_DIR), dirs_exist_ok=True)
 
         if not preprocess_only:
+            # Disable line wrapping in LaTeX output to make file names clickable in VS Code
+            env = os.environ.copy()
+            env['max_print_line'] = "10000"
             # Run make to compile the report
-            make = subprocess.run(['make', '-C', self.output_dir])
+            make = subprocess.run(['make', '-C', self.output_dir], env=env)
 
             # Raise exception if make was not succesful
             make.check_returncode()
