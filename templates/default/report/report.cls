@@ -111,7 +111,14 @@
     moredelim=**[is][\color{highlight1}]{$$*\{\{}{\}\}*$$}, % Tell listings about our markers
                                                                 % ** indicate that it should be combined with other styles.
 }
-\lstnewenvironment{code}{
+\lstnewenvironment{code}[1][]{
+    \def\labeltmp{#1}
+    \ifx\labeltmp\@empty%
+    \else%
+        \lstset{
+            title = \labeltmp
+        }%
+    \fi%
     % To add the right spacing with previous paragraph
     \vspace{\parskip}
     \mdframed[backgroundcolor=codebg,linecolor=black,linewidth=1pt]
