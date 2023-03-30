@@ -31,11 +31,16 @@
     }
 }
 
-\newcommand{\tool}[1]{
-    \ref{#1}%
+\newcommand{\reftool}[1]{
     \directlua{
         tools.reftool("#1")
     }%
+}
+
+\newcommand{\tool}[1]{
+    \ref{#1}%
+    \reftool{#1}%
+    \immediate\write\@auxout{\string\reftool{#1}}%
 }
 
 \newcommand{\toolslist}{
