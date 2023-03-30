@@ -214,7 +214,9 @@ This can be overriden by setting the `location` field in the issue.
 
 === Report initiation
 
-When running `reporter init`, the `report_init` directory is used to create a new report. A template is loaded and files in the directory are templated using jinja, based on the static content in the template.
+When running `reporter init`, the `report_init` directory is used to create a new report. 
+The directories `report_init/base` and `report_init/types/<type_name>` contain the files that make up the report directory.
+Files in these directories are templated using jinja, based on the static content in the template.
 
 === The LaTeX template
 
@@ -222,7 +224,10 @@ The latex template is stored in the `templates/default/report/` folder. The hear
 
 ==== Custom templates
 
-It is possible to extend or override the existing template by creating a new template in the `templates` folder. Any file in `templates/new_template/report` will override a file with the same name in `templates/default/report`.
+It is possible to extend or override the existing template by creating a new template in the `templates` folder. 
+The file `templates/new_template/parents.txt` contains one parent template per line (i.e. default).
+When loading content, a fallthrough system is used so that files that are missing in the template are loaded from the parent template.
+Any file in `templates/new_template/report` will override a file with the same name in the `report` directory of parent reports.
 The directory `static_images` can be created in a report. These images are copied to the `.cache/output` folder in any new reports.
 
 In addition, it is possible to add a file for generating dynamic content. To do this, create a file named `dynamic_text.py` in the directory of the new template. This file should contain a content like the following:
@@ -272,6 +277,18 @@ Describe the assignment, what did we do, etc.
 ----
 
 Describe the conclusion of the project to the management
+
+----
+\begin{code}
+    Some code $${{With highlighted text}}$$.
+\end{code}
+
+\begin{code}[filename.py]
+    Some code $$*{{With highlighted text in a different color}}*$$.
+\end{code}
+----
+
+Code listings based on lstlistings package.
 
 ===== Issue
 
