@@ -243,7 +243,12 @@ class Reporter:
     def diff_standard_issues(self, show_diff=False):
         standard_issues = {}
         for standard_issue in self.template.report_manager.get_standard_issues(contents=True):
-            standard_issues[standard_issue.title] = standard_issue
+            try:
+                standard_issues[standard_issue.title] = standard_issue
+            except AttributeError:
+                print(standard_issue)
+                raise
+
         for issue in self.get_issues():
             diff = None
             standard_issue = standard_issues.get(issue.title)
@@ -262,7 +267,7 @@ class Reporter:
                     except AttributeError:
                         continue
                 if show_diff:
-                    p = subprocess.run(['diff', '-u', '--color=always', standard_issue.path, issue.path], capture_output= True)
+                    p = subprocess.run(['diff', '-u', '--color=always', '-w', standard_issue.path, issue.path], capture_output= True)
                     diff = p.stdout
                 if differences:
                     yield issue, differences, diff

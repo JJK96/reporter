@@ -87,6 +87,9 @@ class Issue:
         with open(self.path, 'w') as f:
             f.write(output)
 
+    def __str__(self):
+        return str(self.content)
+
 
 def load_issue(issue):
     _, extension = os.path.splitext(issue)
