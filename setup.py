@@ -11,7 +11,6 @@ setup(name='Reporter',
         'pyyaml',
         'deepmerge',
         'cvss',
-        'textile_parser @ git+ssh://git@github.com/JJK96/textile_parser.git',
       ],
       entry_points={
         'console_scripts': ['reporter=reporter:main'],
